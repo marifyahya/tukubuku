@@ -69,4 +69,12 @@ class Book extends Model
     {
         return $this->hasMany(Cart::class);
     }
+
+    /**
+     * Get all wishlists for this book.
+     */
+    public function wishlists(): HasMany
+    {
+        return $this->hasMany(Wishlist::class);
+    }
 }

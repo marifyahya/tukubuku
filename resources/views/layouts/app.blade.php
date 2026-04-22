@@ -80,9 +80,12 @@
                             <i class="far fa-bell text-lg"></i>
                             <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
                         </button>
-                        <button class="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600 transition-colors">
+                        <a href="{{ route('wishlist.index') }}" class="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600 transition-colors relative">
                             <i class="far fa-heart text-lg"></i>
-                        </button>
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">
+                                {{ Auth::check() ? Auth::user()->wishlists()->count() : 0 }}
+                            </span>
+                        </a>
                         <a href="{{ route('cart.index') }}" class="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600 transition-colors relative">
                             <i class="fas fa-shopping-cart text-lg"></i>
                             <span id="cart-count" class="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">

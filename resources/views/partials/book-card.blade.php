@@ -1,6 +1,20 @@
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
     <div class="relative w-full h-[180px] md:h-[240px] bg-gray-100 overflow-hidden">
         {{-- Discount badge logic removed as no old_price in DB --}}
+        
+        @auth
+            @php
+                $inWishlist = Auth::user()->wishlists->contains('book_id', $book->id);
+            @endphp
+            <form action="{{ route('wishlist.toggle') }}" method="POST" class="absolute top-2 right-2 z-10">
+                @csrf
+                <input type="hidden" name="book_id" value="{{ $book->id }}">
+                <button type="submit" class="w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center text-sm {{ $inWishlist ? 'text-red-500' : 'text-gray-300 hover:text-red-400' }} transition-colors hover:scale-110">
+                    <i class="fas fa-heart"></i>
+                </button>
+            </form>
+        @endauth
+
         <img src="{{ $book->cover_image ? Storage::url($book->cover_image) : 'https://placehold.co/400x600/e0f2fe/0ea5e9?text=' . urlencode($book->title) }}" 
              alt="{{ $book->title }}" 
              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">

@@ -43,6 +43,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/orders', [UserOrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [UserOrderController::class, 'show'])->name('orders.show');
     Route::post('/orders/{order}/cancel', [UserOrderController::class, 'cancel'])->name('orders.cancel');
+
+    // Wishlist
+    Route::get('/wishlist', [\App\Http\Controllers\User\WishlistController::class, 'index'])->name('wishlist.index');
+    Route::post('/wishlist/toggle', [\App\Http\Controllers\User\WishlistController::class, 'toggle'])->name('wishlist.toggle');
 });
 
 // Admin routes (requires admin)
