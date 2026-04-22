@@ -23,17 +23,17 @@ class SearchController extends Controller
 
         $books = Book::where('title', 'LIKE', "%{$query}%")
             ->orWhere('author', 'LIKE', "%{$query}%")
-            ->select('id', 'title', 'author', 'cover_image', 'price')
+            ->select('slug', 'title', 'author', 'cover_image', 'price')
             ->limit(10)
             ->get();
 
         // Format the response
         $results = $books->map(function ($book) {
             return [
-                'id' => $book->id,
+                'slug' => $book->slug,
                 'title' => $book->title,
                 'author' => $book->author,
-                'cover_url' => $book->cover_image ? asset('storage/' . $book->cover_image) : asset('images/no-cover.jpg'),
+                'cover_url' => $book->cover_image,
                 'price' => $book->price,
             ];
         });

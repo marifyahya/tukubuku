@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'TukuBuku - Toko Buku Online Terpercaya')</title>
-    
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -19,17 +20,18 @@
             }
         }
     </script>
-    
+
     <!-- Font Awesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
+
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
+
         .sticky-header {
             position: sticky;
             top: 0;
@@ -37,6 +39,7 @@
             backdrop-filter: blur(8px);
             background-color: rgba(255, 255, 255, 0.9);
         }
+
         .line-clamp-2 {
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -46,6 +49,7 @@
     </style>
     @stack('styles')
 </head>
+
 <body class="bg-gray-50 text-gray-900 flex flex-col min-h-screen">
 
     <!-- Header (Sticky) -->
@@ -60,13 +64,13 @@
                     <span class="text-2xl font-bold tracking-tight text-gray-800">Tuku<span class="text-primary">Buku</span></span>
                 </a>
 
-                 <!-- Search Bar -->
-                 <div class="flex-grow max-w-xl relative">
-                     <input type="text" placeholder="Cari judul buku, penulis, atau ISBN..." 
-                         id="search-input"
-                         class="w-full bg-gray-100 border-none rounded-full py-2.5 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all outline-none">
-                     <i class="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                 </div>
+                <!-- Search Bar -->
+                <div class="flex-grow max-w-xl relative">
+                    <input type="text" placeholder="Cari judul buku, penulis, atau ISBN..."
+                        id="search-input"
+                        class="w-full bg-gray-100 border-none rounded-full py-2.5 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all outline-none">
+                    <i class="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                </div>
 
                 <!-- Navigation & Icons -->
                 <nav class="flex items-center gap-2 md:gap-6">
@@ -98,23 +102,23 @@
                     <div class="h-8 w-[1px] bg-gray-200 mx-2 hidden md:block"></div>
 
                     @auth
-                        <div class="flex items-center gap-3">
-                            <button class="flex items-center gap-2 group">
-                                <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border-2 border-transparent group-hover:border-primary transition-all">
-                                    <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=0ea5e9&color=fff" alt="Profile">
-                                </div>
-                                <span class="hidden md:block font-semibold text-sm text-gray-700">{{ Auth::user()->name }}</span>
+                    <div class="flex items-center gap-3">
+                        <button class="flex items-center gap-2 group">
+                            <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border-2 border-transparent group-hover:border-primary transition-all">
+                                <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=0ea5e9&color=fff" alt="Profile">
+                            </div>
+                            <span class="hidden md:block font-semibold text-sm text-gray-700">{{ Auth::user()->name }}</span>
+                        </button>
+                        <form action="{{ route('logout') }}" method="POST" class="inline">
+                            @csrf
+                            <button type="submit" class="text-gray-500 hover:text-red-500 transition-colors" title="Logout">
+                                <i class="fas fa-sign-out-alt"></i>
                             </button>
-                            <form action="{{ route('logout') }}" method="POST" class="inline">
-                                @csrf
-                                <button type="submit" class="text-gray-500 hover:text-red-500 transition-colors" title="Logout">
-                                    <i class="fas fa-sign-out-alt"></i>
-                                </button>
-                            </form>
-                        </div>
+                        </form>
+                    </div>
                     @else
-                        <a href="{{ route('login') }}" class="hidden md:block font-bold text-gray-700 hover:text-primary transition-colors">Masuk</a>
-                        <a href="{{ route('register') }}" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all transform active:scale-95">Daftar</a>
+                    <a href="{{ route('login') }}" class="hidden md:block font-bold text-gray-700 hover:text-primary transition-colors">Masuk</a>
+                    <a href="{{ route('register') }}" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all transform active:scale-95">Daftar</a>
                     @endauth
                 </nav>
             </div>
@@ -196,7 +200,7 @@
                     </ul>
                 </div>
             </div>
-            
+
             <div class="pt-8 border-t border-gray-800 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-500">
                 <p>&copy; {{ date('Y') }} TukuBuku. Seluruh hak cipta dilindungi undang-undang.</p>
                 <div class="flex items-center gap-6">
@@ -207,8 +211,9 @@
         </div>
     </footer>
 
-     <!-- Scripts -->
-     @stack('scripts')
-     <script src="{{ asset('js/search.js') }}" defer></script>
+    <!-- Scripts -->
+    @stack('scripts')
+    @vite(['resources/js/app.js', 'resources/js/search.js'])
 </body>
+
 </html>
