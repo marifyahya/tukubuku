@@ -28,7 +28,7 @@
                     <td class="px-6 py-4">{{ $book->id }}</td>
                     <td class="px-6 py-4">{{ $book->title }}</td>
                     <td class="px-6 py-4">{{ $book->author }}</td>
-                    <td class="px-6 py-4">@rupiah($book->price))</td>
+                    <td class="px-6 py-4">@rupiah($book->price)</td>
                     <td class="px-6 py-4">{{ $book->stock }}</td>
                     <td class="px-6 py-4">
                         <a href="{{ route('admin.books.edit', $book->id) }}" class="text-indigo-600 hover:underline mr-2">Edit</a>

@@ -40,7 +40,7 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4">@rupiah($cart->book->price))</td>
+                        <td class="px-6 py-4">@rupiah($cart->book->price)</td>
                         <td class="px-6 py-4">
                             <form action="{{ route('cart.update', $cart->id) }}" method="POST" class="flex items-center gap-2">
                                 @csrf
@@ -50,7 +50,7 @@
                                 <button type="submit" class="text-indigo-600 hover:text-indigo-800 text-sm">Update</button>
                             </form>
                         </td>
-                        <td class="px-6 py-4 font-semibold">@rupiah($cart->book->price * $cart->quantity))</td>
+                        <td class="px-6 py-4 font-semibold">@rupiah($cart->book->price * $cart->quantity)</td>
                         <td class="px-6 py-4">
                             <form action="{{ route('cart.destroy', $cart->id) }}" method="POST">
                                 @csrf
@@ -64,7 +64,7 @@
             <tfoot class="bg-gray-100">
                 <tr>
                     <td colspan="3" class="px-6 py-4 text-right font-bold">Total:</td>
-                    <td class="px-6 py-4 font-bold text-xl">@rupiah($total))</td>
+                    <td class="px-6 py-4 font-bold text-xl">@rupiah($total)</td>
                     <td></td>
                 </tr>
             </tfoot>

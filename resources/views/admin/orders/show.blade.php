@@ -26,7 +26,7 @@
                 @else Cancelled @endif
             </span>
         </p>
-        <p class="text-2xl font-bold text-indigo-600 mt-4">Total: @rupiah($order->total_amount))</p>
+        <p class="text-2xl font-bold text-indigo-600 mt-4">Total: @rupiah($order->total_amount)</p>
     </div>
 
     <!-- User Info -->
@@ -79,9 +79,9 @@
                         <p class="font-semibold">{{ $item->book->title }}</p>
                         <p class="text-sm text-gray-600">{{ $item->book->author }}</p>
                     </td>
-                    <td class="px-6 py-4">@rupiah($item->price_at_purchase))</td>
+                    <td class="px-6 py-4">@rupiah($item->price_at_purchase)</td>
                     <td class="px-6 py-4">{{ $item->quantity }}</td>
-                    <td class="px-6 py-4 font-semibold">@rupiah($item->price_at_purchase * $item->quantity))</td>
+                    <td class="px-6 py-4 font-semibold">@rupiah($item->price_at_purchase * $item->quantity)</td>
                 </tr>
             @endforeach
         </tbody>

@@ -22,7 +22,7 @@
                 <tr class="border-t">
                     <td class="px-6 py-4">#{{ $order->id }}</td>
                     <td class="px-6 py-4">{{ $order->user->name }}</td>
-                    <td class="px-6 py-4">@rupiah($order->total_amount))</td>
+                    <td class="px-6 py-4">@rupiah($order->total_amount)</td>
                     <td class="px-6 py-4">
                         <span class="px-2 py-1 rounded-full text-xs
                             @if($order->status == 0) bg-yellow-100 text-yellow-800

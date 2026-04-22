@@ -22,7 +22,7 @@
             <p class="text-gray-600 text-lg mb-4">oleh {{ $book->author }}</p>
             
             <div class="mb-4">
-                <span class="text-2xl font-bold text-indigo-600">@rupiah($book->price))</span>
+                <span class="text-2xl font-bold text-indigo-600">@rupiah($book->price)</span>
             </div>
 
             <div class="mb-4">

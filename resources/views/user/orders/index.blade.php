@@ -30,7 +30,7 @@
                             @elseif($order->status == 2) Completed
                             @else Cancelled @endif
                         </span>
-                        <p class="text-lg font-bold mt-2">@rupiah($order->total_amount))</p>
+                        <p class="text-lg font-bold mt-2">@rupiah($order->total_amount)</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-4">

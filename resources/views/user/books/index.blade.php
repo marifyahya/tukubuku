@@ -31,7 +31,7 @@
                 <h3 class="text-lg font-semibold mb-1 truncate">{{ $book->title }}</h3>
                 <p class="text-gray-600 text-sm mb-2">{{ $book->author }}</p>
                 <div class="flex items-center justify-between">
-                    <span class="text-indigo-600 font-bold">@rupiah($book->price))</span>
+                    <span class="text-indigo-600 font-bold">@rupiah($book->price)</span>
                     <span class="text-sm text-gray-500">Stok: {{ $book->stock }}</span>
                 </div>
                 <a href="{{ route('books.show', $book->id) }}" class="block mt-4 text-center bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700">

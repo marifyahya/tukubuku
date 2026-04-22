@@ -21,7 +21,7 @@
     </div>
     <div class="bg-white rounded-lg shadow-md p-6">
         <p class="text-gray-600">Total Pendapatan</p>
-        <p class="text-3xl font-bold text-green-600">@rupiah($stats['totalRevenue']))</p>
+        <p class="text-3xl font-bold text-green-600">@rupiah($stats['totalRevenue'])</p>
     </div>
 </div>
 
@@ -52,7 +52,7 @@
                 <tr class="border-t">
                     <td class="px-4 py-2">#{{ $order->id }}</td>
                     <td class="px-4 py-2">{{ $order->user->name }}</td>
-                    <td class="px-4 py-2">@rupiah($order->total_amount))</td>
+                    <td class="px-4 py-2">@rupiah($order->total_amount)</td>
                     <td class="px-4 py-2">
                         <span class="px-2 py-1 rounded-full text-xs
                             @if($order->status == 0) bg-yellow-100 text-yellow-800
