@@ -16,9 +16,12 @@ return new class extends Migration
             $table->string('title');
             $table->string('slug')->unique();
             $table->string('author');
+            $table->string('category')->nullable();
             $table->text('description')->nullable();
             $table->decimal('price', 10, 2);
             $table->integer('stock')->default(0);
+            $table->decimal('rating', 3, 2)->default(0);
+            $table->integer('reviews_count')->default(0);
             $table->string('cover_image')->nullable();
             $table->timestamps();
         });

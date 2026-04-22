@@ -66,8 +66,13 @@ class DatabaseSeeder extends Seeder
             ['title' => 'The DevOps Handbook', 'author' => 'Gene Kim, Jez Humble, Patrick Debois, John Willis', 'description' => 'How to Create World-Class Agility, Reliability, and Security.', 'price' => 220000, 'stock' => 8],
         ];
 
+        $categories = ['Programming', 'Technology', 'Self-Help', 'Design', 'Business'];
+
         foreach ($books as $book) {
             $book['slug'] = Str::slug($book['title']);
+            $book['category'] = $categories[array_rand($categories)];
+            $book['rating'] = rand(35, 50) / 10;
+            $book['reviews_count'] = rand(10, 500);
             Book::create($book);
         }
     }

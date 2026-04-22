@@ -14,14 +14,18 @@ class Book extends Model
         'title',
         'slug',
         'author',
+        'category',
         'description',
         'price',
         'stock',
+        'rating',
+        'reviews_count',
         'cover_image',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'rating' => 'decimal:2',
     ];
 
     /**
