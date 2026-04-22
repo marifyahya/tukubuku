@@ -20,6 +20,7 @@ class Book extends Model
         'stock',
         'rating',
         'reviews_count',
+        'sold_count',
         'cover_image',
     ];
 

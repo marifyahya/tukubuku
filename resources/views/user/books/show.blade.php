@@ -63,6 +63,11 @@
                             <p class="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Stok</p>
                             <div class="text-gray-800 font-black">{{ $book->stock }}</div>
                         </div>
+                        <div class="w-[1px] bg-gray-100"></div>
+                        <div class="text-center">
+                            <p class="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Terjual</p>
+                            <div class="text-gray-800 font-black">{{ $book->sold_count }}</div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -35,7 +35,20 @@ class OrderController extends Controller
             'status' => 'required|integer|in:0,1,2,3',
         ]);
 
-        $order->update(['status' => $validated['status']]);
+        $oldStatus = $order->status;
+        $newStatus = $validated['status'];
+
+        $order->update(['status' => $newStatus]);
+
+        if ($oldStatus != Order::STATUS_COMPLETED && $newStatus == Order::STATUS_COMPLETED) {
+            foreach ($order->orderItems as $item) {
+                $item->book->increment('sold_count', $item->quantity);
+            }
+        } elseif ($oldStatus == Order::STATUS_COMPLETED && $newStatus != Order::STATUS_COMPLETED) {
+            foreach ($order->orderItems as $item) {
+                $item->book->decrement('sold_count', $item->quantity);
+            }
+        }
 
         return redirect()->route('admin.orders.show', $order->id)->with('success', 'Order status updated successfully.');
     }
