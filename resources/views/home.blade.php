@@ -33,7 +33,7 @@
                     <span class="text-indigo-600 font-bold">@rupiah($book->price)</span>
                     <span class="text-sm text-gray-500">Stok: {{ $book->stock }}</span>
                 </div>
-                <a href="{{ route('books.show', $book->id) }}" class="block mt-4 text-center bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700">
+                <a href="{{ route('books.show', $book) }}" class="block mt-4 text-center bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700">
                     Lihat Detail
                 </a>
             </div>

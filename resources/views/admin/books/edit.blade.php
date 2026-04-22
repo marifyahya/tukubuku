@@ -6,7 +6,7 @@
 <h1 class="text-2xl font-bold mb-6">Edit Buku</h1>
 
 <div class="bg-white rounded-lg shadow-md p-6">
-    <form action="{{ route('admin.books.update', $book->id) }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('admin.books.update', $book) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 

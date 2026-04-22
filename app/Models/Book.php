@@ -25,6 +25,32 @@ class Book extends Model
     ];
 
     /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (Book $book) {
+            if (!$book->slug) {
+                $book->slug = \Illuminate\Support\Str::slug($book->title);
+            }
+        });
+
+        static::updating(function (Book $book) {
+            if ($book->isDirty('title') && !$book->isDirty('slug')) {
+                $book->slug = \Illuminate\Support\Str::slug($book->title);
+            }
+        });
+    }
+
+    /**
      * Get all order items for this book.
      */
     public function orderItems(): HasMany

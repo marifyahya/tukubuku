@@ -31,8 +31,8 @@
                     <td class="px-6 py-4">@rupiah($book->price)</td>
                     <td class="px-6 py-4">{{ $book->stock }}</td>
                     <td class="px-6 py-4">
-                        <a href="{{ route('admin.books.edit', $book->id) }}" class="text-indigo-600 hover:underline mr-2">Edit</a>
-                        <form action="{{ route('admin.books.destroy', $book->id) }}" method="POST" class="inline">
+                        <a href="{{ route('admin.books.edit', $book) }}" class="text-indigo-600 hover:underline mr-2">Edit</a>
+                        <form action="{{ route('admin.books.destroy', $book) }}" method="POST" class="inline">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="text-red-600 hover:underline" onclick="return confirm('Apakah Anda yakin?')">Hapus</button>

@@ -14,16 +14,16 @@ use Illuminate\Support\Facades\Route;
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
+// Books
+Route::get('/books', [UserBookController::class, 'index'])->name('books.index');
+Route::get('/books/{book}', [UserBookController::class, 'show'])->name('books.show');
+
 // Auth routes
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
-
-    // Books
-    Route::get('/books', [UserBookController::class, 'index'])->name('books.index');
-    Route::get('/books/{book}', [UserBookController::class, 'show'])->name('books.show');
 });
 
 // User routes (requires login)
