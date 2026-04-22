@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SearchController;
+use App\Http\Middleware\AdvancedThrottle;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,4 +15,4 @@ use App\Http\Controllers\SearchController;
 |
 */
 
-Route::get('/search/suggestions', [SearchController::class, 'suggestions'])->name('search.suggestions')->middleware('throttle:1000,1,60');
+Route::get('/search/suggestions', [SearchController::class, 'suggestions'])->name('search.suggestions')->middleware(AdvancedThrottle::class);
