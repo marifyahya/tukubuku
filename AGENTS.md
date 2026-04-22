@@ -9,6 +9,7 @@
 - Commit message: conventional commits (feat:, fix:, docs:, refactor:, test:, chore:)
 - Wajib review sebelum merge ke main
 - commit mesage gunakan bahasa inggris
+- commit dan push hanya saat diminta
 
 ## Penamaan
 - Classes: PascalCase (BookController, CartService)

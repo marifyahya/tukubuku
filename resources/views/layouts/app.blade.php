@@ -6,7 +6,7 @@
     <title>@yield('title', 'Toko Buku')</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 flex flex-col min-h-screen">
     <!-- Header -->
     <nav class="bg-white shadow-sm">
         <div class="container mx-auto px-4 py-4">
@@ -36,7 +36,7 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8">
+    <main class="container mx-auto px-4 py-8 flex-grow">
         @if(session('success'))
             <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
                 {{ session('success') }}
