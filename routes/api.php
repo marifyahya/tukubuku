@@ -14,4 +14,4 @@ use App\Http\Controllers\SearchController;
 |
 */
 
-Route::get('/search/suggestions', [SearchController::class, 'suggestions'])->name('search.suggestions');
+Route::get('/search/suggestions', [SearchController::class, 'suggestions'])->name('search.suggestions')->middleware('throttle:1000,1,60');
