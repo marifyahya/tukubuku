@@ -12,7 +12,10 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $featuredBooks = Book::where('stock', '>', 0)->latest()->take(6)->get();
-        return view('home', compact('featuredBooks'));
+        $topBooks = Book::where('stock', '>', 0)->orderBy('rating', 'desc')->take(5)->get();
+        $newBooks = Book::where('stock', '>', 0)->latest()->take(5)->get();
+        $recommendedBooks = Book::where('stock', '>', 0)->inRandomOrder()->take(5)->get();
+        
+        return view('home', compact('topBooks', 'newBooks', 'recommendedBooks'));
     }
 }

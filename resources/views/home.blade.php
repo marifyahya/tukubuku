@@ -42,7 +42,9 @@
             </a>
         </div>
         <div id="grid-top" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-            <!-- Product cards will be injected here by JS -->
+            @foreach($topBooks as $book)
+                @include('partials.book-card', ['book' => $book])
+            @endforeach
         </div>
     </section>
 
@@ -69,12 +71,14 @@
                 <h2 class="text-2xl md:text-3xl font-bold text-gray-800">Produk Terbaru</h2>
                 <div class="w-20 h-1.5 bg-primary rounded-full mt-2"></div>
             </div>
-            <a href="#" class="text-primary font-bold hover:underline flex items-center gap-2 text-sm md:text-base">
+            <a href="{{ route('books.index') }}" class="text-primary font-bold hover:underline flex items-center gap-2 text-sm md:text-base">
                 Lihat Semua <i class="fas fa-arrow-right"></i>
             </a>
         </div>
         <div id="grid-new" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-            <!-- Product cards will be injected here by JS -->
+            @foreach($newBooks as $book)
+                @include('partials.book-card', ['book' => $book])
+            @endforeach
         </div>
     </section>
 
@@ -85,12 +89,14 @@
                 <h2 class="text-2xl md:text-3xl font-bold text-gray-800">Rekomendasi Untukmu</h2>
                 <div class="w-20 h-1.5 bg-primary rounded-full mt-2"></div>
             </div>
-            <a href="#" class="text-primary font-bold hover:underline flex items-center gap-2 text-sm md:text-base">
+            <a href="{{ route('books.index') }}" class="text-primary font-bold hover:underline flex items-center gap-2 text-sm md:text-base">
                 Lihat Semua <i class="fas fa-arrow-right"></i>
             </a>
         </div>
         <div id="grid-recom" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-            <!-- Product cards will be injected here by JS -->
+            @foreach($recommendedBooks as $book)
+                @include('partials.book-card', ['book' => $book])
+            @endforeach
         </div>
     </section>
 
@@ -102,112 +108,6 @@
 /**
  * TukuBuku - E-commerce App Logic
  */
-
-// Dummy Data untuk Produk
-const products = [
-    { id: 1, title: "Seni Berpikir Stoik", author: "Fahruddin Faiz", price: 75000, oldPrice: 95000, rating: 4.8, category: "top", image: "https://placehold.co/400x600/e0f2fe/0ea5e9?text=Seni+Berpikir+Stoik" },
-    { id: 2, title: "Atomic Habits", author: "James Clear", price: 120000, oldPrice: null, rating: 4.9, category: "top", image: "https://placehold.co/400x600/fef08a/ca8a04?text=Atomic+Habits" },
-    { id: 3, title: "Filosofi Teras", author: "Henry Manampiring", price: 98000, oldPrice: 110000, rating: 4.7, category: "top", image: "https://placehold.co/400x600/dcfce7/16a34a?text=Filosofi+Teras" },
-    { id: 4, title: "Laskar Pelangi", author: "Andrea Hirata", price: 85000, oldPrice: null, rating: 4.8, category: "top", image: "https://placehold.co/400x600/fecdd3/e11d48?text=Laskar+Pelangi" },
-    { id: 5, title: "Bumi", author: "Tere Liye", price: 105000, oldPrice: 125000, rating: 4.6, category: "top", image: "https://placehold.co/400x600/e0e7ff/4f46e5?text=Bumi" },
-    
-    { id: 6, title: "Cantik Itu Luka", author: "Eka Kurniawan", price: 110000, oldPrice: null, rating: 4.5, category: "new", image: "https://placehold.co/400x600/ffedd5/ea580c?text=Cantik+Itu+Luka" },
-    { id: 7, title: "The Psychology of Money", author: "Morgan Housel", price: 135000, oldPrice: null, rating: 4.9, category: "new", image: "https://placehold.co/400x600/d1fae5/059669?text=Psychology+of+Money" },
-    { id: 8, title: "Sapiens", author: "Yuval Noah Harari", price: 145000, oldPrice: 170000, rating: 4.8, category: "new", image: "https://placehold.co/400x600/fee2e2/dc2626?text=Sapiens" },
-    { id: 9, title: "Negeri Para Bedebah", author: "Tere Liye", price: 95000, oldPrice: null, rating: 4.6, category: "new", image: "https://placehold.co/400x600/cffafe/0891b2?text=Negeri+Para+Bedebah" },
-    { id: 10, title: "Home Coming", author: "Leila S. Chudori", price: 99000, oldPrice: 115000, rating: 4.7, category: "new", image: "https://placehold.co/400x600/f3e8ff/7e22ce?text=Home+Coming" },
-    
-    { id: 11, title: "Madre", author: "Dee Lestari", price: 88000, oldPrice: null, rating: 4.5, category: "recom", image: "https://placehold.co/400x600/fae8ff/c026d3?text=Madre" },
-    { id: 12, title: "Deep Work", author: "Cal Newport", price: 115000, oldPrice: 130000, rating: 4.8, category: "recom", image: "https://placehold.co/400x600/e0f2fe/0284c7?text=Deep+Work" },
-    { id: 13, title: "Laut Bercerita", author: "Leila S. Chudori", price: 125000, oldPrice: null, rating: 4.9, category: "recom", image: "https://placehold.co/400x600/ffedd5/c2410c?text=Laut+Bercerita" },
-    { id: 14, title: "Hujan", author: "Tere Liye", price: 92000, oldPrice: 105000, rating: 4.7, category: "recom", image: "https://placehold.co/400x600/dbeafe/2563eb?text=Hujan" },
-    { id: 15, title: "Sebuah Seni untuk Bersikap Bodo Amat", author: "Mark Manson", price: 105000, oldPrice: null, rating: 4.6, category: "recom", image: "https://placehold.co/400x600/fef9c3/a16207?text=Bersikap+Bodo+Amat" }
-];
-
-// Format Rupiah
-const formatRupiah = (angka) => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0
-    }).format(angka);
-};
-
-// Render Product Cards
-function createProductCard(product) {
-    const discountBadge = product.oldPrice 
-        ? `<div class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-md z-10 shadow-sm">
-            -${Math.round((product.oldPrice - product.price) / product.oldPrice * 100)}%
-           </div>` 
-        : '';
-        
-    const oldPriceHTML = product.oldPrice 
-        ? `<span class="text-[10px] text-gray-400 line-through">${formatRupiah(product.oldPrice)}</span>` 
-        : '';
-
-    return `
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
-            <div class="relative w-full h-[180px] md:h-[240px] bg-gray-100 overflow-hidden">
-                ${discountBadge}
-                <img src="${product.image}" alt="${product.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <button class="bg-white text-primary rounded-full w-10 h-10 flex items-center justify-center shadow-lg hover:bg-primary hover:text-white transition-colors transform translate-y-4 group-hover:translate-y-0" title="Lihat Detail">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="p-4 flex flex-col h-[140px] md:h-[160px]">
-                <p class="text-[10px] text-gray-500 mb-1">${product.author}</p>
-                <h3 class="font-bold text-gray-800 text-xs md:text-sm leading-tight mb-1 line-clamp-2 hover:text-primary cursor-pointer transition-colors">${product.title}</h3>
-                
-                <div class="flex items-center gap-1 mb-2">
-                    <i class="fas fa-star text-yellow-400 text-[10px]"></i>
-                    <span class="text-[10px] font-medium text-gray-600">${product.rating}</span>
-                </div>
-                
-                <div class="mt-auto flex items-end justify-between">
-                    <div>
-                        ${oldPriceHTML}
-                        <div class="font-bold text-primary text-xs md:text-base leading-none">${formatRupiah(product.price)}</div>
-                    </div>
-                    <button onclick="addToCart(${product.id})" class="w-8 h-8 rounded-full bg-blue-50 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors shadow-sm">
-                        <i class="fas fa-cart-plus text-xs"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-function renderProducts() {
-    const gridTop = document.getElementById('grid-top');
-    const gridNew = document.getElementById('grid-new');
-    const gridRecom = document.getElementById('grid-recom');
-
-    if(gridTop) gridTop.innerHTML = products.filter(p => p.category === 'top').map(createProductCard).join('');
-    if(gridNew) gridNew.innerHTML = products.filter(p => p.category === 'new').map(createProductCard).join('');
-    if(gridRecom) gridRecom.innerHTML = products.filter(p => p.category === 'recom').map(createProductCard).join('');
-}
-
-// Keranjang Belanja Sederhana
-let cartItems = 0;
-function addToCart(productId) {
-    const product = products.find(p => p.id === productId);
-    if(product) {
-        cartItems++;
-        const cartCountEl = document.getElementById('cart-count');
-        if (cartCountEl) {
-            cartCountEl.innerText = cartItems;
-            
-            // Animasi pop sederhana
-            const cartIcon = cartCountEl.parentElement;
-            cartIcon.classList.add('scale-125', 'text-primary');
-            setTimeout(() => {
-                cartIcon.classList.remove('scale-125', 'text-primary');
-            }, 200);
-        }
-    }
-}
 
 // Banner Slider Logic
 const slidesData = [
@@ -248,7 +148,7 @@ function renderSlider() {
                     <span class="inline-block py-1 px-3 rounded-full bg-white/20 backdrop-blur-sm text-white text-[10px] font-bold mb-4 tracking-wider uppercase border border-white/30">Terbatas</span>
                     <h2 class="text-2xl md:text-5xl font-bold text-white mb-4 leading-tight">${slide.title}</h2>
                     <p class="text-gray-200 text-xs md:text-lg mb-8 max-w-lg">${slide.desc}</p>
-                    <a href="#" class="inline-flex items-center justify-center px-6 py-2.5 md:px-8 md:py-3.5 bg-white text-primary hover:bg-primary hover:text-white font-bold rounded-full transition-colors shadow-lg group text-sm md:text-base">
+                    <a href="{{ route('books.index') }}" class="inline-flex items-center justify-center px-6 py-2.5 md:px-8 md:py-3.5 bg-white text-primary hover:bg-primary hover:text-white font-bold rounded-full transition-colors shadow-lg group text-sm md:text-base">
                         ${slide.cta}
                         <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
                     </a>
@@ -313,7 +213,6 @@ function resetInterval() {
 document.addEventListener('DOMContentLoaded', () => {
     // Inisialisasi Konten
     renderSlider();
-    renderProducts();
     
     // Setup event listener untuk kontrol slider jika elemen ada
     const btnNext = document.getElementById('next-slide');
