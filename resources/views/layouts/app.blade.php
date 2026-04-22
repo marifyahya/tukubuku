@@ -60,12 +60,13 @@
                     <span class="text-2xl font-bold tracking-tight text-gray-800">Tuku<span class="text-primary">Buku</span></span>
                 </a>
 
-                <!-- Search Bar (Desktop) -->
-                <div class="hidden md:flex flex-grow max-w-xl relative">
-                    <input type="text" placeholder="Cari judul buku, penulis, atau ISBN..." 
-                        class="w-full bg-gray-100 border-none rounded-full py-2.5 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all outline-none">
-                    <i class="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                </div>
+                 <!-- Search Bar -->
+                 <div class="flex-grow max-w-xl relative">
+                     <input type="text" placeholder="Cari judul buku, penulis, atau ISBN..." 
+                         id="search-input"
+                         class="w-full bg-gray-100 border-none rounded-full py-2.5 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all outline-none">
+                     <i class="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                 </div>
 
                 <!-- Navigation & Icons -->
                 <nav class="flex items-center gap-2 md:gap-6">
@@ -206,7 +207,8 @@
         </div>
     </footer>
 
-    <!-- Scripts -->
-    @stack('scripts')
+     <!-- Scripts -->
+     @stack('scripts')
+     <script src="{{ asset('js/search.js') }}" defer></script>
 </body>
 </html>
