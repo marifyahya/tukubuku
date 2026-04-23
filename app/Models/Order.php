@@ -19,13 +19,8 @@ class Order extends Model
 
     protected $casts = [
         'total_amount' => 'decimal:2',
-        'status' => 'integer',
+        'status' => \App\Enums\OrderStatus::class,
     ];
-
-    const STATUS_PENDING = 0;
-    const STATUS_PROCESSING = 1;
-    const STATUS_COMPLETED = 2;
-    const STATUS_CANCELLED = 3;
 
     /**
      * Get the user that owns the order.

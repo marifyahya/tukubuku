@@ -19,8 +19,8 @@ class DashboardController extends Controller
             'totalBooks' => Book::count(),
             'totalUsers' => User::where('role', 'user')->count(),
             'totalOrders' => Order::count(),
-            'totalRevenue' => Order::where('status', Order::STATUS_COMPLETED)->sum('total_amount'),
-            'pendingOrders' => Order::where('status', Order::STATUS_PENDING)->count(),
+            'totalRevenue' => Order::where('status', \App\Enums\OrderStatus::COMPLETED)->sum('total_amount'),
+            'pendingOrders' => Order::where('status', \App\Enums\OrderStatus::UNPAID)->count(),
             'recentOrders' => Order::latest()->take(10)->get(),
         ];
 

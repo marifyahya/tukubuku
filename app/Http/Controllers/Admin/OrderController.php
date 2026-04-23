@@ -32,19 +32,19 @@ class OrderController extends Controller
     public function updateStatus(Request $request, Order $order)
     {
         $validated = $request->validate([
-            'status' => 'required|integer|in:0,1,2,3',
+            'status' => ['required', \Illuminate\Validation\Rule::enum(\App\Enums\OrderStatus::class)],
         ]);
 
         $oldStatus = $order->status;
-        $newStatus = $validated['status'];
+        $newStatus = \App\Enums\OrderStatus::from($validated['status']);
 
         $order->update(['status' => $newStatus]);
 
-        if ($oldStatus != Order::STATUS_COMPLETED && $newStatus == Order::STATUS_COMPLETED) {
+        if ($oldStatus !== \App\Enums\OrderStatus::COMPLETED && $newStatus === \App\Enums\OrderStatus::COMPLETED) {
             foreach ($order->orderItems as $item) {
                 $item->book->increment('sold_count', $item->quantity);
             }
-        } elseif ($oldStatus == Order::STATUS_COMPLETED && $newStatus != Order::STATUS_COMPLETED) {
+        } elseif ($oldStatus === \App\Enums\OrderStatus::COMPLETED && $newStatus !== \App\Enums\OrderStatus::COMPLETED) {
             foreach ($order->orderItems as $item) {
                 $item->book->decrement('sold_count', $item->quantity);
             }
