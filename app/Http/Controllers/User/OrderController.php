@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\Book;
+use App\Enums\OrderStatus;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -72,7 +72,7 @@ class OrderController extends Controller
         $order = Order::create([
             'user_id' => Auth::id(),
             'total_amount' => $totalAmount,
-            'status' => \App\Enums\OrderStatus::UNPAID,
+            'status' => OrderStatus::UNPAID,
         ]);
 
         // Create order items and decrease stock
@@ -104,7 +104,7 @@ class OrderController extends Controller
             return back()->with('error', 'Unauthorized.');
         }
 
-        if ($order->status !== \App\Enums\OrderStatus::UNPAID) {
+        if ($order->status !== OrderStatus::UNPAID) {
             return back()->with('error', 'Pesanan tidak dapat dibatalkan.');
         }
 
@@ -113,7 +113,7 @@ class OrderController extends Controller
             $item->book->increment('stock', $item->quantity);
         }
 
-        $order->update(['status' => \App\Enums\OrderStatus::CANCELLED]);
+        $order->update(['status' => OrderStatus::CANCELLED]);
 
         return redirect()->route('orders.index')->with('success', 'Pesanan dibatalkan.');
     }

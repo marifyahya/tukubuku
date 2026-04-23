@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@use App\Enums\OrderStatus
+
 @section('title', 'Pesanan Saya - TukuBuku')
 
 @section('content')
@@ -48,7 +50,7 @@
                     <div class="flex overflow-x-auto pb-2 mb-6 gap-2 no-scrollbar">
                         <a href="{{ route('orders.index') }}" class="flex-none px-4 py-2 rounded-xl text-sm font-semibold transition-colors {{ request('tab') === null ? 'bg-primary text-white shadow-md shadow-primary/30' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">Semua</a>
                         
-                        @foreach(\App\Enums\OrderStatus::cases() as $status)
+                        @foreach(OrderStatus::cases() as $status)
                         <a href="{{ route('orders.index', ['tab' => $status->value]) }}" class="flex-none px-4 py-2 rounded-xl text-sm font-semibold transition-colors {{ request('tab') != '' && request('tab') == $status->value ? 'bg-primary text-white shadow-md shadow-primary/30' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
                             {{ $status->label() }}
                         </a>
@@ -128,7 +130,7 @@
                                             <div class="w-full sm:w-auto flex flex-col gap-2">
                                                 <a href="{{ route('orders.show', $order->id) }}" class="w-full text-center bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-xl font-bold hover:bg-gray-50 transition-colors">Lihat Detail</a>
                                                 
-                                                @if($order->status === \App\Enums\OrderStatus::UNPAID)
+                                                @if($order->status === OrderStatus::UNPAID)
                                                     <form action="{{ route('orders.cancel', $order->id) }}" method="POST">
                                                         @csrf
                                                         <button type="submit" class="w-full text-center px-4 py-2 border border-red-200 text-red-600 rounded-xl font-bold hover:bg-red-50 transition-colors" onclick="return confirm('Apakah Anda yakin ingin membatalkan pesanan ini?')">

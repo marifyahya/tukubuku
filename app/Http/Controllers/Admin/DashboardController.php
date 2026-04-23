@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Enums\OrderStatus;
 use App\Models\Book;
 use App\Models\Order;
 use App\Models\User;
@@ -19,8 +20,8 @@ class DashboardController extends Controller
             'totalBooks' => Book::count(),
             'totalUsers' => User::where('role', 'user')->count(),
             'totalOrders' => Order::count(),
-            'totalRevenue' => Order::where('status', \App\Enums\OrderStatus::COMPLETED)->sum('total_amount'),
-            'pendingOrders' => Order::where('status', \App\Enums\OrderStatus::UNPAID)->count(),
+            'totalRevenue' => Order::where('status', OrderStatus::COMPLETED)->sum('total_amount'),
+            'pendingOrders' => Order::where('status', OrderStatus::UNPAID)->count(),
             'recentOrders' => Order::latest()->take(10)->get(),
         ];
 

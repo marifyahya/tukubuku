@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@use App\Enums\OrderStatus
+
 @section('title', 'Detail Pesanan - Admin TukuBuku')
 
 @section('content')
@@ -50,7 +52,7 @@
                 </div>
             </div>
 
-            @if($order->status !== \App\Enums\OrderStatus::COMPLETED && $order->status !== \App\Enums\OrderStatus::CANCELLED)
+            @if($order->status !== OrderStatus::COMPLETED && $order->status !== OrderStatus::CANCELLED)
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                     <i class="fas fa-sync-alt text-primary"></i> Update Status
@@ -60,7 +62,7 @@
                     @method('PUT')
                     <div class="mb-4">
                         <select name="status" id="status" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-gray-700">
-                            @foreach(\App\Enums\OrderStatus::cases() as $status)
+                            @foreach(OrderStatus::cases() as $status)
                                 <option value="{{ $status->value }}" {{ $order->status === $status ? 'selected' : '' }}>
                                     {{ $status->label() }}
                                 </option>

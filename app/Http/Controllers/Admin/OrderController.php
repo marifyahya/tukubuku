@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Enums\OrderStatus;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -32,19 +33,19 @@ class OrderController extends Controller
     public function updateStatus(Request $request, Order $order)
     {
         $validated = $request->validate([
-            'status' => ['required', \Illuminate\Validation\Rule::enum(\App\Enums\OrderStatus::class)],
+            'status' => ['required', \Illuminate\Validation\Rule::enum(OrderStatus::class)],
         ]);
 
         $oldStatus = $order->status;
-        $newStatus = \App\Enums\OrderStatus::from($validated['status']);
+        $newStatus = OrderStatus::from($validated['status']);
 
         $order->update(['status' => $newStatus]);
 
-        if ($oldStatus !== \App\Enums\OrderStatus::COMPLETED && $newStatus === \App\Enums\OrderStatus::COMPLETED) {
+        if ($oldStatus !== OrderStatus::COMPLETED && $newStatus === OrderStatus::COMPLETED) {
             foreach ($order->orderItems as $item) {
                 $item->book->increment('sold_count', $item->quantity);
             }
-        } elseif ($oldStatus === \App\Enums\OrderStatus::COMPLETED && $newStatus !== \App\Enums\OrderStatus::COMPLETED) {
+        } elseif ($oldStatus === OrderStatus::COMPLETED && $newStatus !== OrderStatus::COMPLETED) {
             foreach ($order->orderItems as $item) {
                 $item->book->decrement('sold_count', $item->quantity);
             }
