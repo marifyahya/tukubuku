@@ -118,6 +118,13 @@
                                 <p class="text-xs text-gray-500 truncate">{{ Auth::user()->email }}</p>
                             </div>
                             
+                            @if(Auth::user()->isAdmin())
+                            <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                                <i class="fas fa-tachometer-alt w-5"></i> Admin Dashboard
+                            </a>
+                            <div class="border-t border-gray-50 my-1"></div>
+                            @endif
+
                             <a href="{{ route('profile.index') }}" class="block px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
                                 <i class="fas fa-user w-5"></i> Akun Saya
                             </a>

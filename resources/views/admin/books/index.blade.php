@@ -1,25 +1,18 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Kelola Buku - Admin TukuBuku')
+@section('page-title', 'Kelola Buku')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-800">Kelola Buku</h1>
-            <p class="text-gray-500 mt-1">Daftar semua buku yang tersedia di toko.</p>
-        </div>
-        <a href="{{ route('admin.books.create') }}" class="bg-primary text-white px-6 py-2.5 rounded-xl hover:bg-primary/90 font-bold shadow-lg shadow-primary/30 transition-all flex items-center justify-center gap-2 transform active:scale-95">
-            <i class="fas fa-plus"></i> Tambah Buku
-        </a>
+<div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+    <div>
+        <h1 class="text-xl font-bold text-gray-800">Kelola Buku</h1>
+        <p class="text-gray-500 text-sm mt-1">Daftar semua buku yang tersedia di toko.</p>
     </div>
-
-    @if(session('success'))
-        <div class="bg-green-50 border border-green-200 text-green-700 px-6 py-4 rounded-xl mb-6 flex items-center gap-3 shadow-sm">
-            <i class="fas fa-check-circle text-green-500 text-lg"></i>
-            {{ session('success') }}
-        </div>
-    @endif
+    <a href="{{ route('admin.books.create') }}" class="bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary/90 font-bold shadow-lg shadow-primary/30 transition-all flex items-center justify-center gap-2 transform active:scale-95 text-sm">
+        <i class="fas fa-plus"></i> Tambah Buku
+    </a>
+</div>
 
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
@@ -108,5 +101,4 @@
             </div>
         @endif
     </div>
-</div>
 @endsection
