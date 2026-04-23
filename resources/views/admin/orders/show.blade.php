@@ -1,6 +1,5 @@
+@use('App\Enums\OrderStatus')
 @extends('layouts.app')
-
-@use App\Enums\OrderStatus
 
 @section('title', 'Detail Pesanan - Admin TukuBuku')
 
