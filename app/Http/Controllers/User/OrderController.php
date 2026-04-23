@@ -15,12 +15,17 @@ class OrderController extends Controller
     /**
      * Display user's orders.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Order::where('user_id', Auth::id())
+        $query = Order::where('user_id', Auth::id())
             ->with('orderItems.book')
-            ->latest()
-            ->paginate(10);
+            ->latest();
+
+        if ($request->has('tab') && $request->tab !== '') {
+            $query->where('status', $request->tab);
+        }
+
+        $orders = $query->paginate(10)->withQueryString();
 
         return view('user.orders.index', compact('orders'));
     }
@@ -67,7 +72,7 @@ class OrderController extends Controller
         $order = Order::create([
             'user_id' => Auth::id(),
             'total_amount' => $totalAmount,
-            'status' => \App\Models\Order::STATUS_PENDING,
+            'status' => \App\Enums\OrderStatus::UNPAID,
         ]);
 
         // Create order items and decrease stock
@@ -99,7 +104,7 @@ class OrderController extends Controller
             return back()->with('error', 'Unauthorized.');
         }
 
-        if ($order->status !== \App\Models\Order::STATUS_PENDING) {
+        if ($order->status !== \App\Enums\OrderStatus::UNPAID) {
             return back()->with('error', 'Pesanan tidak dapat dibatalkan.');
         }
 
@@ -108,7 +113,7 @@ class OrderController extends Controller
             $item->book->increment('stock', $item->quantity);
         }
 
-        $order->update(['status' => \App\Models\Order::STATUS_CANCELLED]);
+        $order->update(['status' => \App\Enums\OrderStatus::CANCELLED]);
 
         return redirect()->route('orders.index')->with('success', 'Pesanan dibatalkan.');
     }

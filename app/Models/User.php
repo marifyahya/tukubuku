@@ -62,4 +62,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(Wishlist::class);
     }
+
+    /**
+     * Get all addresses for this user.
+     */
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(UserAddress::class);
+    }
 }

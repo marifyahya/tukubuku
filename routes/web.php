@@ -47,6 +47,18 @@ Route::middleware('auth')->group(function () {
     // Wishlist
     Route::get('/wishlist', [\App\Http\Controllers\User\WishlistController::class, 'index'])->name('wishlist.index');
     Route::post('/wishlist/toggle', [\App\Http\Controllers\User\WishlistController::class, 'toggle'])->name('wishlist.toggle');
+
+    // Profile
+    Route::get('/profile', [\App\Http\Controllers\User\ProfileController::class, 'index'])->name('profile.index');
+    Route::put('/profile', [\App\Http\Controllers\User\ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [\App\Http\Controllers\User\ProfileController::class, 'updatePassword'])->name('profile.password');
+
+    // Addresses
+    Route::get('/addresses', [\App\Http\Controllers\User\AddressController::class, 'index'])->name('addresses.index');
+    Route::post('/addresses', [\App\Http\Controllers\User\AddressController::class, 'store'])->name('addresses.store');
+    Route::put('/addresses/{address}', [\App\Http\Controllers\User\AddressController::class, 'update'])->name('addresses.update');
+    Route::delete('/addresses/{address}', [\App\Http\Controllers\User\AddressController::class, 'destroy'])->name('addresses.destroy');
+    Route::post('/addresses/{address}/primary', [\App\Http\Controllers\User\AddressController::class, 'setPrimary'])->name('addresses.primary');
 });
 
 // Admin routes (requires admin)

@@ -102,19 +102,38 @@
                     <div class="h-8 w-[1px] bg-gray-200 mx-2 hidden md:block"></div>
 
                     @auth
-                    <div class="flex items-center gap-3">
-                        <button class="flex items-center gap-2 group">
+                    <div class="relative">
+                        <button type="button" id="profile-dropdown-btn" class="flex items-center gap-2 group">
                             <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border-2 border-transparent group-hover:border-primary transition-all">
                                 <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=0ea5e9&color=fff" alt="Profile">
                             </div>
                             <span class="hidden md:block font-semibold text-sm text-gray-700">{{ Auth::user()->name }}</span>
+                            <i class="fas fa-chevron-down text-xs text-gray-400 group-hover:text-primary transition-colors"></i>
                         </button>
-                        <form action="{{ route('logout') }}" method="POST" class="inline">
-                            @csrf
-                            <button type="submit" class="text-gray-500 hover:text-red-500 transition-colors" title="Logout">
-                                <i class="fas fa-sign-out-alt"></i>
-                            </button>
-                        </form>
+
+                        <!-- Dropdown Menu -->
+                        <div id="profile-dropdown-menu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 transform opacity-0 scale-95 transition-all duration-200 origin-top-right">
+                            <div class="px-4 py-3 border-b border-gray-50">
+                                <p class="text-sm font-semibold text-gray-800">{{ Auth::user()->name }}</p>
+                                <p class="text-xs text-gray-500 truncate">{{ Auth::user()->email }}</p>
+                            </div>
+                            
+                            <a href="{{ route('profile.index') }}" class="block px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                                <i class="fas fa-user w-5"></i> Akun Saya
+                            </a>
+                            <a href="{{ route('orders.index') }}" class="block px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                                <i class="fas fa-shopping-bag w-5"></i> Pesanan Saya
+                            </a>
+                            
+                            <div class="border-t border-gray-50 my-1"></div>
+                            
+                            <form action="{{ route('logout') }}" method="POST" class="block">
+                                @csrf
+                                <button type="submit" class="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                    <i class="fas fa-sign-out-alt w-5"></i> Keluar
+                                </button>
+                            </form>
+                        </div>
                     </div>
                     @else
                     <a href="{{ route('login') }}" class="hidden md:block font-bold text-gray-700 hover:text-primary transition-colors">Masuk</a>
@@ -214,6 +233,44 @@
     <!-- Scripts -->
     @stack('scripts')
     @vite(['resources/js/app.js', 'resources/js/search.js'])
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const btn = document.getElementById('profile-dropdown-btn');
+            const menu = document.getElementById('profile-dropdown-menu');
+            
+            if (btn && menu) {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (menu.classList.contains('hidden')) {
+                        menu.classList.remove('hidden');
+                        setTimeout(() => {
+                            menu.classList.remove('opacity-0', 'scale-95');
+                            menu.classList.add('opacity-100', 'scale-100');
+                        }, 10);
+                    } else {
+                        menu.classList.remove('opacity-100', 'scale-100');
+                        menu.classList.add('opacity-0', 'scale-95');
+                        setTimeout(() => {
+                            menu.classList.add('hidden');
+                        }, 200);
+                    }
+                });
+
+                document.addEventListener('click', function(e) {
+                    if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                        if (!menu.classList.contains('hidden')) {
+                            menu.classList.remove('opacity-100', 'scale-100');
+                            menu.classList.add('opacity-0', 'scale-95');
+                            setTimeout(() => {
+                                menu.classList.add('hidden');
+                            }, 200);
+                        }
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>
