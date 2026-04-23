@@ -1,10 +1,10 @@
 @use('App\Enums\OrderStatus')
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Detail Pesanan - Admin TukuBuku')
+@section('page-title', 'Detail Pesanan')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
     <div class="mb-8">
         <a href="{{ route('admin.orders.index') }}" class="inline-flex items-center gap-2 text-gray-500 hover:text-primary transition-colors font-medium">
             <i class="fas fa-arrow-left"></i> Kembali ke Daftar Pesanan
@@ -141,5 +141,4 @@
             </button>
         </form>
     </div>
-</div>
 @endsection

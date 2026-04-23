@@ -10,11 +10,42 @@ use Illuminate\Support\Facades\Hash;
 class UserController extends Controller
 {
     /**
-     * Display a listing of users.
+     * Display a listing of users with search, filter, and sort.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::where('role', 'user')->paginate(10);
+        $query = User::query();
+
+        // Search by name or email
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by role
+        if ($request->filled('role') && in_array($request->role, ['admin', 'user'])) {
+            $query->where('role', $request->role);
+        }
+
+        // Sorting
+        $sortField = $request->get('sort', 'created_at');
+        $sortDirection = $request->get('direction', 'desc');
+
+        $allowedSorts = ['name', 'email', 'created_at'];
+        if (!in_array($sortField, $allowedSorts)) {
+            $sortField = 'created_at';
+        }
+        if (!in_array($sortDirection, ['asc', 'desc'])) {
+            $sortDirection = 'desc';
+        }
+
+        $query->orderBy($sortField, $sortDirection);
+
+        $users = $query->paginate(10)->withQueryString();
+
         return view('admin.users.index', compact('users'));
     }
 

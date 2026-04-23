@@ -1,10 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Tambah Buku - Admin TukuBuku')
+@section('page-title', 'Tambah Buku')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="max-w-4xl mx-auto">
+<div class="max-w-4xl mx-auto">
         <div class="flex items-center gap-4 mb-8">
             <a href="{{ route('admin.books.index') }}" class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-500 hover:text-primary hover:shadow-md transition-all border border-gray-200">
                 <i class="fas fa-arrow-left"></i>
@@ -104,6 +104,5 @@
                 </div>
             </form>
         </div>
-    </div>
 </div>
 @endsection
