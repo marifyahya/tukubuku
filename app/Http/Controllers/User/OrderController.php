@@ -45,14 +45,22 @@ class OrderController extends Controller
     }
 
     /**
-     * Checkout - create order from cart.
+     * Checkout - create order from selected cart items.
      */
     public function checkout(Request $request)
     {
-        $carts = Cart::where('user_id', Auth::id())->with('book')->get();
+        $request->validate([
+            'cart_ids' => 'required|array|min:1',
+            'cart_ids.*' => 'exists:carts,id',
+        ]);
+
+        $carts = Cart::where('user_id', Auth::id())
+            ->whereIn('id', $request->cart_ids)
+            ->with('book')
+            ->get();
 
         if ($carts->isEmpty()) {
-            return redirect()->route('cart.index')->with('error', 'Keranjang kosong.');
+            return redirect()->route('cart.index')->with('error', 'Tidak ada item yang dipilih.');
         }
 
         // Validate stock
@@ -88,8 +96,10 @@ class OrderController extends Controller
             $cart->book->decrement('stock', $cart->quantity);
         }
 
-        // Clear cart
-        Cart::where('user_id', Auth::id())->delete();
+        // Remove only checked-out items from cart
+        Cart::where('user_id', Auth::id())
+            ->whereIn('id', $request->cart_ids)
+            ->delete();
 
         return redirect()->route('orders.show', $order->id)
             ->with('success', 'Pesanan berhasil dibuat.');
