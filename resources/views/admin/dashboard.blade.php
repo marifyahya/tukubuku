@@ -100,15 +100,8 @@
                                 </td>
                                 <td class="px-6 py-4 text-sm font-bold text-gray-800">@rupiah($order->total_amount)</td>
                                 <td class="px-6 py-4">
-                                    <span class="px-3 py-1 rounded-full text-xs font-bold
-                                        @if($order->status == 0) bg-orange-100 text-orange-700 border border-orange-200
-                                        @elseif($order->status == 1) bg-blue-100 text-blue-700 border border-blue-200
-                                        @elseif($order->status == 2) bg-green-100 text-green-700 border border-green-200
-                                        @else bg-red-100 text-red-700 border border-red-200 @endif">
-                                        @if($order->status == 0) Pending
-                                        @elseif($order->status == 1) Processing
-                                        @elseif($order->status == 2) Completed
-                                        @else Cancelled @endif
+                                    <span class="px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1.5 border {{ $order->status->badgeClasses() }}">
+                                        <i class="{{ $order->status->icon() }}"></i> {{ $order->status->label() }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-right">

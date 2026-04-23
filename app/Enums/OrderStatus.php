@@ -27,17 +27,32 @@ enum OrderStatus: int
     }
     
     /**
-     * Mendapatkan warna badge untuk UI (opsional).
+     * Mendapatkan class CSS badge berdasarkan status.
      */
-    public function color(): string
+    public function badgeClasses(): string
     {
         return match($this) {
-            self::UNPAID    => 'gray',
-            self::PACKING   => 'info',
-            self::SHIPPED   => 'primary',
-            self::COMPLETED => 'success',
-            self::CANCELLED => 'danger',
-            self::RETURNED  => 'warning',
+            self::UNPAID    => 'bg-gray-100 text-gray-700 border-gray-200',
+            self::PACKING   => 'bg-blue-100 text-blue-700 border-blue-200',
+            self::SHIPPED   => 'bg-indigo-100 text-indigo-700 border-indigo-200',
+            self::COMPLETED => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+            self::CANCELLED => 'bg-rose-100 text-rose-700 border-rose-200',
+            self::RETURNED  => 'bg-amber-100 text-amber-700 border-amber-200',
+        };
+    }
+
+    /**
+     * Mendapatkan icon FontAwesome berdasarkan status.
+     */
+    public function icon(): string
+    {
+        return match($this) {
+            self::UNPAID    => 'fas fa-clock',
+            self::PACKING   => 'fas fa-box',
+            self::SHIPPED   => 'fas fa-truck',
+            self::COMPLETED => 'fas fa-check-circle',
+            self::CANCELLED => 'fas fa-times-circle',
+            self::RETURNED  => 'fas fa-undo',
         };
     }
 }
