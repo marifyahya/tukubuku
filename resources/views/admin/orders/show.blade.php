@@ -21,15 +21,8 @@
                     <p class="text-gray-500 text-sm"><i class="far fa-calendar-alt mr-1"></i> {{ $order->created_at->format('d M Y - H:i') }}</p>
                 </div>
                 <div class="mt-4 md:mt-0">
-                    <span class="px-4 py-2 rounded-xl text-sm font-bold inline-flex items-center gap-2
-                        @if($order->status == 0) bg-orange-100 text-orange-700 border border-orange-200
-                        @elseif($order->status == 1) bg-blue-100 text-blue-700 border border-blue-200
-                        @elseif($order->status == 2) bg-green-100 text-green-700 border border-green-200
-                        @else bg-red-100 text-red-700 border border-red-200 @endif">
-                        @if($order->status == 0) <i class="fas fa-clock"></i> Menunggu Konfirmasi
-                        @elseif($order->status == 1) <i class="fas fa-spinner fa-spin"></i> Sedang Diproses
-                        @elseif($order->status == 2) <i class="fas fa-check-circle"></i> Selesai
-                        @else <i class="fas fa-times-circle"></i> Dibatalkan @endif
+                    <span class="px-4 py-2 rounded-xl text-sm font-bold inline-flex items-center gap-2 border {{ $order->status->badgeClasses() }}">
+                        <i class="{{ $order->status->icon() }}"></i> {{ $order->status->label() }}
                     </span>
                 </div>
             </div>
@@ -57,7 +50,7 @@
                 </div>
             </div>
 
-            @if($order->status != 3)
+            @if($order->status !== \App\Enums\OrderStatus::COMPLETED && $order->status !== \App\Enums\OrderStatus::CANCELLED)
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                     <i class="fas fa-sync-alt text-primary"></i> Update Status
@@ -67,10 +60,11 @@
                     @method('PUT')
                     <div class="mb-4">
                         <select name="status" id="status" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-gray-700">
-                            <option value="0" {{ $order->status == 0 ? 'selected' : '' }}>Pending</option>
-                            <option value="1" {{ $order->status == 1 ? 'selected' : '' }}>Processing</option>
-                            <option value="2" {{ $order->status == 2 ? 'selected' : '' }}>Completed</option>
-                            <option value="3" {{ $order->status == 3 ? 'selected' : '' }}>Cancelled</option>
+                            @foreach(\App\Enums\OrderStatus::cases() as $status)
+                                <option value="{{ $status->value }}" {{ $order->status === $status ? 'selected' : '' }}>
+                                    {{ $status->label() }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
                     <button type="submit" class="w-full bg-primary text-white py-2.5 rounded-xl hover:bg-primary/90 font-bold shadow-md shadow-primary/20 transition-all transform active:scale-95">
