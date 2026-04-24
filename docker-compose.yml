@@ -12,6 +12,10 @@ services:
       - .env
     networks:
       - tukubuku-net
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
 
   # Nginx Service
   nginx:
@@ -27,6 +31,10 @@ services:
       - php
     networks:
       - tukubuku-net
+    deploy:
+      resources:
+        limits:
+          memory: 128M
 
   # MySQL Service
   mysql:
@@ -44,14 +52,23 @@ services:
       - "3309:3306"
     networks:
       - tukubuku-net
+    deploy:
+      resources:
+        limits:
+          memory: 1536M
 
   # Redis Service
   redis:
     image: redis:alpine
     container_name: tukubuku_redis
     restart: unless-stopped
+    command: ["redis-server", "--maxmemory", "512mb", "--maxmemory-policy", "allkeys-lru"]
     networks:
       - tukubuku-net
+    deploy:
+      resources:
+        limits:
+          memory: 640M
 
 networks:
   tukubuku-net:
