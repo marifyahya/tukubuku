@@ -1,90 +1,84 @@
-# Tukubuku - Toko Buku Online
+# Tukubuku - Toko Buku Online Modern
 
-Tukubuku adalah aplikasi e-commerce sederhana berbasis Laravel untuk menjual buku secara online.
+Tukubuku adalah platform e-commerce toko buku online yang dibangun dengan **Laravel 11**, dirancang dengan fokus pada performa, reliabilitas pembayaran, dan pengalaman pengguna yang responsif (*real-time*).
 
-## Prasyarat (Prerequisites)
+## 🚀 Fitur Unggulan
 
-Sebelum menjalankan proyek ini, pastikan Anda telah menginstal:
+- **Integrasi Pembayaran Midtrans**: Mendukung berbagai metode pembayaran (VA, QRIS, GoPay, Gerai Retail).
+- **Sinkronisasi Real-time**: Update status pembayaran secara instan tanpa refresh halaman menggunakan **Laravel Reverb (Websockets)**.
+- **Reliabilitas Status**: Sistem otomatis (*Background Job*) untuk memastikan status pesanan tetap sinkron dengan Midtrans meskipun webhook gagal.
+- **Modern Build System**: Menggunakan **Vite** dan **Tailwind CSS v4** untuk performa frontend yang optimal.
+- **Dashboard Admin**: Manajemen inventaris buku, pemantauan transaksi, dan ekspor data laporan.
 
-- [PHP >= 8.2](https://www.php.net/downloads)
-- [Composer](https://getcomposer.org/)
-- [Node.js & NPM](https://nodejs.org/)
-- [Docker](https://www.docker.com/) (opsional jika menggunakan Docker)
-- Database (MySQL/SQLite)
+## 🛠 Tech Stack
 
-## Cara Menjalankan di Lokal (Tanpa Docker)
+- **Backend**: Laravel 11 (PHP 8.2+)
+- **Database**: MySQL & Redis
+- **Real-time**: Laravel Reverb
+- **Frontend**: Tailwind CSS v4, Vanilla JS, Laravel Echo
+- **Deployment**: Docker Support
 
-1. **Clone repository ini:**
-   ```bash
-   git clone https://github.com/marifyahya/bookstore.git
-   cd bookstore
-   ```
+## 📦 Instalasi & Setup
 
-2. **Instal dependensi PHP:**
-   ```bash
-   composer install
-   ```
+### 1. Persiapan Awal
+```bash
+git clone https://github.com/marifyahya/tukubuku.git
+cd tukubuku
+composer install
+npm install
+cp .env.example .env
+```
 
-3. **Instal dependensi JavaScript dan build aset:**
-   ```bash
-   npm install
-   npm run build
-   ```
+### 2. Konfigurasi Environment
+Sesuaikan kredensial berikut di file `.env`:
+- **Database**: `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`
+- **Midtrans**: `MIDTRANS_SERVER_KEY`, `MIDTRANS_CLIENT_KEY`
+- **Broadcasting**: `BROADCAST_CONNECTION=reverb`
+- **Queue**: `QUEUE_CONNECTION=redis`
 
-4. **Siapkan file konfigurasi `.env`:**
-   ```bash
-   cp .env.example .env
-   ```
-   *Buka file `.env` dan sesuaikan pengaturan database Anda.*
+### 3. Inisialisasi Aplikasi
+```bash
+php artisan key:generate
+php artisan migrate --seed
+npm run build
+```
 
-5. **Generate kunci aplikasi:**
-   ```bash
-   php artisan key:generate
-   ```
+## 🚥 Menjalankan Aplikasi
 
-6. **Jalankan migrasi database dan seeder:**
-   ```bash
-   php artisan migrate --seed
-   ```
+Untuk menjalankan fitur lengkap (termasuk fitur real-time), Anda perlu menjalankan proses berikut secara bersamaan:
 
-7. **Jalankan server pengembangan:**
-   ```bash
-   php artisan serve
-   ```
-   *Buka `http://localhost:8000` di browser Anda.*
+### A. Web Server
+```bash
+php artisan serve
+```
 
-## Cara Menjalankan Menggunakan Docker
+### B. Websocket Server (Reverb)
+Diperlukan untuk fitur update status pembayaran otomatis di browser user.
+```bash
+php artisan reverb:start
+```
 
-1. **Siapkan file `.env`:**
-   ```bash
-   cp .env.example .env
-   ```
-   Pastikan pengaturan database di `.env` sesuai dengan yang ada di `docker-compose.yml`.
+### C. Queue Worker
+Diperlukan untuk memproses pengiriman notifikasi/broadcast di latar belakang.
+```bash
+php artisan queue:work
+```
 
-2. **Build dan jalankan kontainer:**
-   ```bash
-   docker-compose up -d --build
-   ```
+### D. Frontend Assets (Development)
+```bash
+npm run dev
+```
 
-3. **Jalankan perintah Laravel di dalam kontainer:**
-   ```bash
-   docker exec -it tukubuku_php composer install
-   docker exec -it tukubuku_php php artisan key:generate
-   docker exec -it tukubuku_php php artisan migrate --seed
-   ```
+## 🐳 Menggunakan Docker
+Jika Anda lebih suka menggunakan Docker, jalankan:
+```bash
+docker-compose up -d --build
+docker exec -it tukubuku_php php artisan migrate --seed
+```
 
-4. **Instal & Build Aset (Lokal):**
-   ```bash
-   npm install && npm run build
-   ```
+## 📊 Fitur Admin & Keamanan
+- **Audit Trail**: Setiap perubahan status pembayaran terekam lengkap dalam `order_payment_histories`.
+- **Manual Sync**: Admin memiliki tombol khusus untuk menarik status terbaru langsung dari API Midtrans jika terjadi *desync*.
 
-Akses aplikasi di `http://localhost:8000`.
-
-## Fitur Utama
-
-- **User:** Browsing buku, Keranjang belanja, Checkout pesanan.
-- **Admin:** Manajemen buku, Manajemen pengguna, Manajemen pesanan, Dashboard statistik.
-
-## Lisensi
-
-Proyek ini adalah perangkat lunak open-source yang dilisensikan di bawah [Lisensi MIT](https://opensource.org/licenses/MIT).
+## 📄 Lisensi
+Proyek ini dilisensikan di bawah [Lisensi MIT](https://opensource.org/licenses/MIT).
