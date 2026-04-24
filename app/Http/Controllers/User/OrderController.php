@@ -156,30 +156,26 @@ class OrderController extends Controller
             ->whereIn('id', $request->cart_ids)
             ->delete();
 
+        // Dispatch Job for automatic cancellation after 30 minutes
+        \App\Jobs\CancelOrderJob::dispatch($order)->delay(now()->addMinutes(30));
+
         return redirect()->route('orders.show', $order->order_number)
             ->with('success', 'Pesanan berhasil dibuat. Silahkan lakukan pembayaran.');
     }
 
     /**
-     * Cancel order (only pending orders).
+     * Cancel order (manual by user).
      */
-    public function cancel(Order $order)
+    public function cancel(Order $order, \App\Services\OrderService $orderService)
     {
         if ($order->user_id !== Auth::id()) {
             return back()->with('error', 'Unauthorized.');
         }
 
-        if ($order->status !== OrderStatus::UNPAID) {
-            return back()->with('error', 'Pesanan tidak dapat dibatalkan.');
+        if ($orderService->cancelOrder($order)) {
+            return redirect()->route('orders.index')->with('success', 'Pesanan berhasil dibatalkan.');
         }
 
-        // Restore stock
-        foreach ($order->orderItems as $item) {
-            $item->book->increment('stock', $item->quantity);
-        }
-
-        $order->update(['status' => OrderStatus::CANCELLED]);
-
-        return redirect()->route('orders.index')->with('success', 'Pesanan dibatalkan.');
+        return back()->with('error', 'Pesanan tidak dapat dibatalkan atau sudah diproses.');
     }
 }
