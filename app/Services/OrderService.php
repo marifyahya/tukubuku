@@ -157,21 +157,25 @@ class OrderService
     private function cancelMidtransTransaction($order): void
     {
         try {
-            // Get the pending payment and cancel it in Midtrans
-            $latestPayment = $order->paymentHistories()
+            // Get all pending payments for this order
+            $pendingPayments = $order->paymentHistories()
                 ->where('payment_status', OrderPaymentHistory::STATUS_PENDING)
-                ->first();
+                ->get();
 
-            if ($latestPayment) {
-                $this->midtransService->cancelTransaction($latestPayment->midtrans_order_id);
+            foreach ($pendingPayments as $payment) {
+                try {
+                    $this->midtransService->cancelTransaction($payment->midtrans_order_id);
 
-                // Update status directly via query builder to avoid stdClass issues
-                $order->paymentHistories()
-                    ->where('id', $latestPayment->id)
-                    ->update(['payment_status' => OrderPaymentHistory::STATUS_CANCEL]);
+                    // Update internal status
+                    $payment->update(['payment_status' => OrderPaymentHistory::STATUS_CANCEL]);
+
+                    Log::info("Midtrans transaction {$payment->midtrans_order_id} cancelled.");
+                } catch (\Exception $innerEx) {
+                    Log::warning("Failed to cancel specific Midtrans transaction {$payment->midtrans_order_id}: " . $innerEx->getMessage());
+                }
             }
         } catch (\Exception $e) {
-            Log::warning("Midtrans cancel failed for order {$order->order_number}: " . $e->getMessage());
+            Log::warning("Midtrans cancel flow failed for order {$order->order_number}: " . $e->getMessage());
         }
     }
 }
