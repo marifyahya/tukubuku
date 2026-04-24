@@ -27,4 +27,26 @@ class OrderRepository implements OrderRepositoryInterface
     {
         return Order::where('id', $orderId)->update(['status' => $status]);
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function getUserOrders(int $userId, array $filters): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        return Order::where('user_id', $userId)
+            ->with(['orderItems.book', 'latestPayment'])
+            ->latest()
+            ->when($filters['status'] ?? null, function ($query, $status) {
+                return $query->where('status', $status);
+            })
+            ->when($filters['search'] ?? null, function ($query, $search) {
+                return $query->where(function ($q) use ($search) {
+                    $q->where('order_number', 'like', "%{$search}%")
+                        ->orWhereHas('orderItems.book', function ($bq) use ($search) {
+                            $bq->where('title', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->paginate($filters['per_page'] ?? 10);
+    }
 }

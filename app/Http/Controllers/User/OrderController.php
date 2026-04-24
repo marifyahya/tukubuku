@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Enums\OrderStatus;
 use App\Models\Cart;
 use App\Models\Order;
-use App\Models\OrderItem;
 use App\Models\UserAddress;
 use App\Http\Requests\CheckoutRequest;
 use Illuminate\Http\Request;
@@ -14,30 +13,21 @@ use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
+    public function __construct(
+        private \App\Services\OrderService $orderService,
+        private \App\Repositories\Contracts\OrderRepositoryInterface $orderRepository
+    ) {
+    }
     /**
      * Display user's orders.
      */
     public function index(Request $request)
     {
-        $query = Order::where('user_id', Auth::id())
-            ->with(['orderItems.book', 'latestPayment'])
-            ->latest();
-
-        if ($request->has('tab') && $request->tab !== '') {
-            $query->where('status', $request->tab);
-        }
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('order_number', 'like', "%{$search}%")
-                  ->orWhereHas('orderItems.book', function($bq) use ($search) {
-                      $bq->where('title', 'like', "%{$search}%");
-                  });
-            });
-        }
-
-        $orders = $query->paginate(10)->withQueryString();
+        $orders = $this->orderRepository->getUserOrders(Auth::id(), [
+            'tab' => $request->tab,
+            'search' => $request->search,
+            'per_page' => 10
+        ]);
 
         return view('user.orders.index', compact('orders'));
     }
@@ -51,9 +41,13 @@ class OrderController extends Controller
             return redirect()->route('orders.index')->with('error', 'Unauthorized.');
         }
 
-        $order->load(['orderItems.book', 'latestPayment', 'paymentHistories' => function($q) {
-            $q->latest();
-        }]);
+        $order->load([
+            'orderItems.book',
+            'latestPayment',
+            'paymentHistories' => function ($q) {
+                $q->latest();
+            }
+        ]);
 
         return view('user.orders.show', compact('order'));
     }
@@ -77,7 +71,7 @@ class OrderController extends Controller
         }
 
         $addresses = UserAddress::where('user_id', Auth::id())->get();
-        
+
         $subtotal = $carts->sum(function ($cart) {
             return $cart->book->price * $cart->quantity;
         });
@@ -93,74 +87,18 @@ class OrderController extends Controller
      */
     public function checkout(CheckoutRequest $request)
     {
-        $carts = Cart::where('user_id', Auth::id())
-            ->whereIn('id', $request->cart_ids)
-            ->with('book')
-            ->get();
+        try {
+            $order = $this->orderService->createOrder(
+                Auth::id(),
+                $request->cart_ids,
+                $request->address_id
+            );
 
-        if ($carts->isEmpty()) {
-            return redirect()->route('cart.index')->with('error', 'Tidak ada item yang dipilih.');
+            return redirect()->route('orders.show', $order->order_number)
+                ->with('success', 'Pesanan berhasil dibuat. Silahkan lakukan pembayaran.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        // Validate address
-        $address = UserAddress::where('user_id', Auth::id())->findOrFail($request->address_id);
-
-        // Validate stock
-        foreach ($carts as $cart) {
-            if ($cart->book->stock < $cart->quantity) {
-                return redirect()->route('cart.index')
-                    ->with('error', "Stok buku '{$cart->book->title}' tidak mencukupi.");
-            }
-        }
-
-        // Calculate total
-        $subtotal = $carts->sum(function ($cart) {
-            return $cart->book->price * $cart->quantity;
-        });
-
-        $shippingCost = config('midtrans.shipping_cost', 16000);
-
-        // Create Address Snapshot
-        $addressSnapshot = sprintf(
-            "%s | %s\n%s%s",
-            $address->full_name,
-            $address->phone_number,
-            $address->full_address,
-            $address->landmark ? " ({$address->landmark})" : ""
-        );
-
-        // Create order
-        $order = Order::create([
-            'user_id' => Auth::id(),
-            'shipping_address' => $addressSnapshot,
-            'total_amount' => $subtotal,
-            'shipping_cost' => $shippingCost,
-            'status' => OrderStatus::UNPAID,
-        ]);
-
-        // Create order items and decrease stock
-        foreach ($carts as $cart) {
-            OrderItem::create([
-                'order_id' => $order->id,
-                'book_id' => $cart->book_id,
-                'quantity' => $cart->quantity,
-                'price_at_purchase' => $cart->book->price,
-            ]);
-
-            // Decrease stock
-            $cart->book->decrement('stock', $cart->quantity);
-        }
-
-        // Remove only checked-out items from cart
-        Cart::where('user_id', Auth::id())
-            ->whereIn('id', $request->cart_ids)
-            ->delete();
-
-        // Dispatch Job for automatic cancellation after 30 minutes
-        \App\Jobs\CancelOrderJob::dispatch($order)->delay(now()->addMinutes(30));
-
-        return redirect()->route('orders.show', $order->order_number)
-            ->with('success', 'Pesanan berhasil dibuat. Silahkan lakukan pembayaran.');
     }
 
     /**

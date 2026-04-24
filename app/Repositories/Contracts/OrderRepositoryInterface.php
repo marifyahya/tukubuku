@@ -23,4 +23,13 @@ interface OrderRepositoryInterface
      * @return bool
      */
     public function updateStatus(int $orderId, OrderStatus $status): bool;
+
+    /**
+     * Get paginated orders for a user with search and status filters.
+     *
+     * @param int $userId
+     * @param array $filters
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    public function getUserOrders(int $userId, array $filters): \Illuminate\Contracts\Pagination\LengthAwarePaginator;
 }
