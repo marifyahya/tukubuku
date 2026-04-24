@@ -6,20 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'TukuBuku - Toko Buku Online Terpercaya')</title>
 
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#0ea5e9',
-                        secondary: '#64748b',
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- Assets (Tailwind CSS & JS) -->
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/search.js'])
 
     <!-- Font Awesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -239,7 +227,6 @@
 
     <!-- Scripts -->
     @stack('scripts')
-    @vite(['resources/js/app.js', 'resources/js/search.js'])
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
