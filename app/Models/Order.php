@@ -14,13 +14,21 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
+        'shipping_address',
         'total_amount',
+        'shipping_cost',
         'status',
+        'payment_token',
+        'payment_status',
+        'payment_method',
+        'paid_at',
     ];
 
     protected $casts = [
         'total_amount' => 'decimal:2',
+        'shipping_cost' => 'decimal:2',
         'status' => OrderStatus::class,
+        'paid_at' => 'datetime',
     ];
 
     /**

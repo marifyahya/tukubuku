@@ -81,18 +81,7 @@
                                             </div>
                                         </div>
                                         <div>
-                                            @php
-                                                $colorClass = match($order->status->color()) {
-                                                    'gray' => 'bg-gray-100 text-gray-700',
-                                                    'info' => 'bg-blue-100 text-blue-700',
-                                                    'primary' => 'bg-primary/10 text-primary',
-                                                    'success' => 'bg-green-100 text-green-700',
-                                                    'danger' => 'bg-red-100 text-red-700',
-                                                    'warning' => 'bg-orange-100 text-orange-700',
-                                                    default => 'bg-gray-100 text-gray-700',
-                                                };
-                                            @endphp
-                                            <span class="px-3 py-1 rounded-lg text-xs font-bold inline-block {{ $colorClass }}">
+                                            <span class="px-3 py-1 rounded-lg text-xs font-bold inline-block {{ $order->status->badgeClasses() }}">
                                                 {{ $order->status->label() }}
                                             </span>
                                         </div>

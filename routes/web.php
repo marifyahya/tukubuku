@@ -9,6 +9,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\User\BookController as UserBookController;
 use App\Http\Controllers\User\CartController;
 use App\Http\Controllers\User\OrderController as UserOrderController;
+use App\Http\Controllers\User\PaymentController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -37,12 +38,16 @@ Route::middleware('auth')->group(function () {
     Route::delete('/cart/{cart}', [CartController::class, 'destroy'])->name('cart.destroy');
 
     // Checkout
+    Route::get('/checkout', [UserOrderController::class, 'showConfirmation'])->name('checkout.confirm');
     Route::post('/checkout', [UserOrderController::class, 'checkout'])->name('checkout');
 
     // Orders
     Route::get('/orders', [UserOrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [UserOrderController::class, 'show'])->name('orders.show');
     Route::post('/orders/{order}/cancel', [UserOrderController::class, 'cancel'])->name('orders.cancel');
+
+    // Payment
+    Route::post('/payment/snap-token', [PaymentController::class, 'getSnapToken'])->name('payment.snap-token');
 
     // Wishlist
     Route::get('/wishlist', [\App\Http\Controllers\User\WishlistController::class, 'index'])->name('wishlist.index');
@@ -60,6 +65,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/addresses/{address}', [\App\Http\Controllers\User\AddressController::class, 'destroy'])->name('addresses.destroy');
     Route::post('/addresses/{address}/primary', [\App\Http\Controllers\User\AddressController::class, 'setPrimary'])->name('addresses.primary');
 });
+
+// Midtrans Webhook (public)
+Route::post('/payment/notification', [PaymentController::class, 'notification'])->name('payment.notification');
 
 // Admin routes (requires admin)
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {

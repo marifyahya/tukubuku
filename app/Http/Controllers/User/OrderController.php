@@ -7,6 +7,8 @@ use App\Enums\OrderStatus;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\UserAddress;
+use App\Http\Requests\CheckoutRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -45,15 +47,40 @@ class OrderController extends Controller
     }
 
     /**
+     * Show checkout confirmation page.
+     */
+    public function showConfirmation(Request $request)
+    {
+        if (!$request->has('cart_ids') || !is_array($request->cart_ids)) {
+            return redirect()->route('cart.index')->with('error', 'Pilih item yang ingin dibeli.');
+        }
+
+        $carts = Cart::where('user_id', Auth::id())
+            ->whereIn('id', $request->cart_ids)
+            ->with('book')
+            ->get();
+
+        if ($carts->isEmpty()) {
+            return redirect()->route('cart.index')->with('error', 'Item tidak ditemukan.');
+        }
+
+        $addresses = UserAddress::where('user_id', Auth::id())->get();
+        
+        $subtotal = $carts->sum(function ($cart) {
+            return $cart->book->price * $cart->quantity;
+        });
+
+        $shippingCost = config('midtrans.shipping_cost', 16000);
+        $total = $subtotal + $shippingCost;
+
+        return view('user.checkout.confirm', compact('carts', 'addresses', 'subtotal', 'shippingCost', 'total'));
+    }
+
+    /**
      * Checkout - create order from selected cart items.
      */
-    public function checkout(Request $request)
+    public function checkout(CheckoutRequest $request)
     {
-        $request->validate([
-            'cart_ids' => 'required|array|min:1',
-            'cart_ids.*' => 'exists:carts,id',
-        ]);
-
         $carts = Cart::where('user_id', Auth::id())
             ->whereIn('id', $request->cart_ids)
             ->with('book')
@@ -62,6 +89,9 @@ class OrderController extends Controller
         if ($carts->isEmpty()) {
             return redirect()->route('cart.index')->with('error', 'Tidak ada item yang dipilih.');
         }
+
+        // Validate address
+        $address = UserAddress::where('user_id', Auth::id())->findOrFail($request->address_id);
 
         // Validate stock
         foreach ($carts as $cart) {
@@ -72,15 +102,29 @@ class OrderController extends Controller
         }
 
         // Calculate total
-        $totalAmount = $carts->sum(function ($cart) {
+        $subtotal = $carts->sum(function ($cart) {
             return $cart->book->price * $cart->quantity;
         });
+
+        $shippingCost = config('midtrans.shipping_cost', 16000);
+
+        // Create Address Snapshot
+        $addressSnapshot = sprintf(
+            "%s | %s\n%s%s",
+            $address->full_name,
+            $address->phone_number,
+            $address->full_address,
+            $address->landmark ? " ({$address->landmark})" : ""
+        );
 
         // Create order
         $order = Order::create([
             'user_id' => Auth::id(),
-            'total_amount' => $totalAmount,
+            'shipping_address' => $addressSnapshot,
+            'total_amount' => $subtotal,
+            'shipping_cost' => $shippingCost,
             'status' => OrderStatus::UNPAID,
+            'payment_status' => 'pending',
         ]);
 
         // Create order items and decrease stock
@@ -102,7 +146,7 @@ class OrderController extends Controller
             ->delete();
 
         return redirect()->route('orders.show', $order->id)
-            ->with('success', 'Pesanan berhasil dibuat.');
+            ->with('success', 'Pesanan berhasil dibuat. Silahkan lakukan pembayaran.');
     }
 
     /**
