@@ -209,8 +209,6 @@
                                         <button onclick="copyToClipboard('{{ $instructions['payment_code'] }}', this)" class="shrink-0 min-w-[65px] text-[10px] bg-white border border-amber-200 text-amber-700 px-2 py-1.5 rounded-lg font-bold hover:bg-amber-100 transition-all">SALIN</button>
                                     </div>
                                 @endif
-                                
-                                @endif
 
                                 <div class="pt-3 border-t border-amber-100 flex justify-between items-center">
                                     <span class="text-xs text-amber-700 font-medium">Total Tagihan</span>
