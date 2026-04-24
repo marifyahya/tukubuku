@@ -18,11 +18,11 @@ class OrderController extends Controller
     {
         $query = Order::with('user');
 
-        // Search by user name or order ID
+        // Search by user name or order_number
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('id', 'like', "%{$search}%")
+                $q->where('order_number', 'like', "%{$search}%")
                   ->orWhereHas('user', function ($userQuery) use ($search) {
                       $userQuery->where('name', 'like', "%{$search}%");
                   });
@@ -64,7 +64,7 @@ class OrderController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('id', 'like', "%{$search}%")
+                $q->where('order_number', 'like', "%{$search}%")
                   ->orWhereHas('user', function ($userQuery) use ($search) {
                       $userQuery->where('name', 'like', "%{$search}%");
                   });
@@ -98,7 +98,7 @@ class OrderController extends Controller
             // CSV rows
             foreach ($orders as $order) {
                 fputcsv($handle, [
-                    $order->id,
+                    $order->order_number,
                     $order->user->name,
                     $order->user->email,
                     $order->total_amount,
@@ -144,7 +144,7 @@ class OrderController extends Controller
             }
         }
 
-        return redirect()->route('admin.orders.show', $order->id)->with('success', 'Order status updated successfully.');
+        return redirect()->route('admin.orders.show', $order)->with('success', 'Order status updated successfully.');
     }
 
     /**

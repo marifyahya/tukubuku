@@ -16,7 +16,80 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Sidebar: Status & Payment -->
+                <!-- Main: Items & Billing (Now on the Left) -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Items -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="px-6 py-4 bg-gray-50/80 border-b border-gray-100">
+                            <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
+                                <i class="fas fa-shopping-bag text-primary"></i> Daftar Buku
+                            </h3>
+                        </div>
+                        <div class="divide-y divide-gray-100">
+                            @foreach($order->orderItems as $item)
+                                <div class="p-6 flex items-center gap-4">
+                                    @if($item->book->cover_image)
+                                        <img src="{{ Storage::url($item->book->cover_image) }}" alt="{{ $item->book->title }}" class="w-16 h-24 object-cover rounded-lg shadow-sm">
+                                    @else
+                                        <div class="w-16 h-24 bg-gray-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-image text-gray-300"></i>
+                                        </div>
+                                    @endif
+                                    <div class="flex-1 min-w-0">
+                                        <h4 class="font-bold text-gray-900 truncate">{{ $item->book->title }}</h4>
+                                        <p class="text-xs text-gray-500">{{ $item->book->author }}</p>
+                                        <p class="text-sm text-gray-600 mt-2">{{ $item->quantity }} x @rupiah($item->price_at_purchase)</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-bold text-gray-900">@rupiah($item->price_at_purchase * $item->quantity)</p>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                        <!-- Billing Detail -->
+                        <div class="p-6 bg-gray-50/50 border-t border-gray-100 space-y-3">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Subtotal Produk</span>
+                                <span class="font-medium text-gray-900">@rupiah($order->total_amount)</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Ongkos Kirim</span>
+                                <span class="font-medium text-gray-900">@rupiah($order->shipping_cost)</span>
+                            </div>
+                            <div class="flex justify-between pt-3 border-t border-gray-100">
+                                <span class="font-bold text-gray-900">Total Pembayaran</span>
+                                <span class="text-2xl font-black text-primary">@rupiah($order->total_amount + $order->shipping_cost)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment History -->
+                    @if($order->paymentHistories->count() > 1)
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                            <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-history text-primary"></i> Riwayat Percobaan Pembayaran
+                            </h3>
+                            <div class="space-y-3">
+                                @foreach($order->paymentHistories as $history)
+                                    <div class="flex justify-between items-center text-xs p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                        <div>
+                                            <p class="font-bold text-gray-800 uppercase">{{ str_replace('_', ' ', $history->payment_method ?? 'Belum Pilih Metode') }}</p>
+                                            <p class="text-gray-500">{{ $history->created_at->format('d M Y, H:i') }}</p>
+                                        </div>
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase border 
+                                            @if($history->payment_status == 'settlement' || $history->payment_status == 'paid') bg-emerald-50 text-emerald-600 border-emerald-100
+                                            @elseif($history->payment_status == 'pending') bg-amber-50 text-amber-600 border-amber-100
+                                            @else bg-rose-50 text-rose-600 border-rose-100 @endif">
+                                            {{ $history->payment_status }}
+                                        </span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Sidebar: Status & Payment (Now on the Right) -->
                 <div class="lg:col-span-1 space-y-6">
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 relative overflow-hidden">
                         <div class="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-[100px] -z-0"></div>
@@ -103,79 +176,6 @@
                                 <i class="fas fa-times-circle mr-1"></i> Batalkan Pesanan
                             </button>
                         </form>
-                    @endif
-                </div>
-
-                <!-- Main: Items & Billing -->
-                <div class="lg:col-span-2 space-y-6">
-                    <!-- Items -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div class="px-6 py-4 bg-gray-50/80 border-b border-gray-100">
-                            <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
-                                <i class="fas fa-shopping-bag text-primary"></i> Daftar Buku
-                            </h3>
-                        </div>
-                        <div class="divide-y divide-gray-100">
-                            @foreach($order->orderItems as $item)
-                                <div class="p-6 flex items-center gap-4">
-                                    @if($item->book->cover_image)
-                                        <img src="{{ Storage::url($item->book->cover_image) }}" alt="{{ $item->book->title }}" class="w-16 h-24 object-cover rounded-lg shadow-sm">
-                                    @else
-                                        <div class="w-16 h-24 bg-gray-100 rounded-lg flex items-center justify-center">
-                                            <i class="fas fa-image text-gray-300"></i>
-                                        </div>
-                                    @endif
-                                    <div class="flex-1 min-w-0">
-                                        <h4 class="font-bold text-gray-900 truncate">{{ $item->book->title }}</h4>
-                                        <p class="text-xs text-gray-500">{{ $item->book->author }}</p>
-                                        <p class="text-sm text-gray-600 mt-2">{{ $item->quantity }} x @rupiah($item->price_at_purchase)</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <p class="font-bold text-gray-900">@rupiah($item->price_at_purchase * $item->quantity)</p>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                        <!-- Billing Detail -->
-                        <div class="p-6 bg-gray-50/50 border-t border-gray-100 space-y-3">
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-500">Subtotal Produk</span>
-                                <span class="font-medium text-gray-900">@rupiah($order->total_amount)</span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-500">Ongkos Kirim</span>
-                                <span class="font-medium text-gray-900">@rupiah($order->shipping_cost)</span>
-                            </div>
-                            <div class="flex justify-between pt-3 border-t border-gray-100">
-                                <span class="font-bold text-gray-900">Total Pembayaran</span>
-                                <span class="text-2xl font-black text-primary">@rupiah($order->total_amount + $order->shipping_cost)</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Payment History (Optional/Admin style or for User debug if needed) -->
-                    @if($order->paymentHistories->count() > 1)
-                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                            <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                <i class="fas fa-history text-primary"></i> Riwayat Percobaan Pembayaran
-                            </h3>
-                            <div class="space-y-3">
-                                @foreach($order->paymentHistories as $history)
-                                    <div class="flex justify-between items-center text-xs p-3 bg-gray-50 rounded-lg border border-gray-100">
-                                        <div>
-                                            <p class="font-bold text-gray-800 uppercase">{{ str_replace('_', ' ', $history->payment_method ?? 'Belum Pilih Metode') }}</p>
-                                            <p class="text-gray-500">{{ $history->created_at->format('d M Y, H:i') }}</p>
-                                        </div>
-                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase border 
-                                            @if($history->payment_status == 'settlement' || $history->payment_status == 'paid') bg-emerald-50 text-emerald-600 border-emerald-100
-                                            @elseif($history->payment_status == 'pending') bg-amber-50 text-amber-600 border-amber-100
-                                            @else bg-rose-50 text-rose-600 border-rose-100 @endif">
-                                            {{ $history->payment_status }}
-                                        </span>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
                     @endif
                 </div>
             </div>

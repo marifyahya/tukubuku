@@ -104,7 +104,7 @@
             <tbody class="divide-y divide-gray-50">
                 @forelse($orders as $order)
                     <tr class="hover:bg-gray-50/50 transition-colors">
-                        <td class="px-5 py-3.5 font-bold text-gray-900 text-sm">#{{ $order->id }}</td>
+                        <td class="px-5 py-3.5 font-bold text-gray-900 text-[10px] font-mono">{{ $order->order_number }}</td>
                         <td class="px-5 py-3.5">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-full bg-primary/10 overflow-hidden flex-shrink-0 border border-primary/20">
@@ -124,7 +124,7 @@
                             <span class="text-gray-400 text-xs block">{{ $order->created_at->format('H:i') }}</span>
                         </td>
                         <td class="px-5 py-3.5 text-right">
-                            <a href="{{ route('admin.orders.show', $order->id) }}" class="w-8 h-8 inline-flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all" title="Detail Pesanan">
+                            <a href="{{ route('admin.orders.show', $order) }}" class="w-8 h-8 inline-flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all" title="Detail Pesanan">
                                 <i class="fas fa-eye text-sm"></i>
                             </a>
                         </td>

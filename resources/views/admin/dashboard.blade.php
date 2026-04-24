@@ -166,7 +166,7 @@
                 <tbody class="divide-y divide-gray-50">
                     @forelse($stats['recentOrders'] as $order)
                         <tr class="hover:bg-gray-50/50 transition-colors">
-                            <td class="px-5 py-3 text-sm font-bold text-gray-900">#{{ $order->id }}</td>
+                            <td class="px-5 py-3 text-sm font-bold text-gray-900 font-mono">{{ $order->order_number }}</td>
                             <td class="px-5 py-3 text-sm">
                                 <div class="flex items-center gap-2">
                                     <div class="w-7 h-7 rounded-full bg-primary/10 overflow-hidden flex-shrink-0 border border-primary/20">
@@ -182,7 +182,7 @@
                                 </span>
                             </td>
                             <td class="px-5 py-3 text-right">
-                                <a href="{{ route('admin.orders.show', $order->id) }}" class="w-7 h-7 inline-flex items-center justify-center rounded-lg bg-gray-100 text-gray-500 hover:bg-primary hover:text-white transition-all" title="Detail">
+                                <a href="{{ route('admin.orders.show', $order) }}" class="w-7 h-7 inline-flex items-center justify-center rounded-lg bg-gray-100 text-gray-500 hover:bg-primary hover:text-white transition-all" title="Detail">
                                     <i class="fas fa-eye text-xs"></i>
                                 </a>
                             </td>
