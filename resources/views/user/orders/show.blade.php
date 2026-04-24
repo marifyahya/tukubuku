@@ -286,7 +286,22 @@
             }
         });
 
+        // Existing token from backend
+        let existingSnapToken = @json($latestPayment->payment_token ?? null);
+        let isExpired = {{ ($latestPayment && $latestPayment->expiry_at && $latestPayment->expiry_at->isPast()) ? 'true' : 'false' }};
+
         function initiatePayment(changeMethod = false) {
+            // Reuse existing token if available and not changing method
+            if (!changeMethod && existingSnapToken && !isExpired) {
+                snap.pay(existingSnapToken, {
+                    onSuccess: function(result){ window.location.reload(); },
+                    onPending: function(result){ window.location.reload(); },
+                    onError: function(result){ alert("Pembayaran gagal!"); window.location.reload(); },
+                    onClose: function(){ window.location.reload(); }
+                });
+                return;
+            }
+
             const payBtn = document.getElementById('pay-button');
             const originalHtml = payBtn.innerHTML;
             
@@ -307,20 +322,12 @@
             .then(response => response.json())
             .then(data => {
                 if (data.snap_token) {
+                    existingSnapToken = data.snap_token; // Save for next time
                     snap.pay(data.snap_token, {
-                        onSuccess: function(result){
-                            window.location.reload();
-                        },
-                        onPending: function(result){
-                            window.location.reload();
-                        },
-                        onError: function(result){
-                            alert("Pembayaran gagal!");
-                            window.location.reload();
-                        },
-                        onClose: function(){
-                            window.location.reload();
-                        }
+                        onSuccess: function(result){ window.location.reload(); },
+                        onPending: function(result){ window.location.reload(); },
+                        onError: function(result){ alert("Pembayaran gagal!"); window.location.reload(); },
+                        onClose: function(){ window.location.reload(); }
                     });
                 } else {
                     alert("Gagal mendapatkan token pembayaran: " + data.message);

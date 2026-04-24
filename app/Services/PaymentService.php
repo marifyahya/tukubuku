@@ -20,7 +20,14 @@ class PaymentService
     public function getPaymentToken(Order $order, bool $changeMethod = false): array
     {
         $latestPayment = $order->latestPayment;
-        $expiryMinutes = 45;
+
+        // Calculate remaining minutes until order expires (30 minutes from creation)
+        $orderExpiry = $order->created_at->addMinutes(30);
+        $remainingMinutes = (int) now()->diffInMinutes($orderExpiry, false);
+
+        if ($remainingMinutes <= 0) {
+            throw new \Exception("Pesanan ini telah kedaluwarsa dan tidak dapat dibayar.");
+        }
 
         // 1. Reuse existing token if not changing method and still valid
         if (!$changeMethod && $latestPayment && $latestPayment->payment_status === OrderPaymentHistory::STATUS_PENDING) {
@@ -42,16 +49,16 @@ class PaymentService
             }
         }
 
-        // 3. Create new Snap Token
+        // 3. Create new Snap Token with remaining time
         $attemptCount = $order->paymentHistories()->count() + 1;
-        $snapToken = $this->midtransService->createSnapToken($order, $attemptCount, $expiryMinutes);
+        $snapToken = $this->midtransService->createSnapToken($order, $attemptCount, $remainingMinutes);
 
         $payment = $order->paymentHistories()->create([
             'midtrans_order_id' => "{$order->order_number}-{$attemptCount}",
             'payment_token' => $snapToken,
             'payment_status' => OrderPaymentHistory::STATUS_PENDING,
             'gross_amount' => $order->total_amount + $order->shipping_cost,
-            'expiry_at' => now()->addMinutes($expiryMinutes),
+            'expiry_at' => $orderExpiry, // Sync with order expiry
         ]);
 
         return [
