@@ -44,4 +44,45 @@ class OrderPaymentHistory extends Model
     {
         return $this->belongsTo(Order::class);
     }
+
+    /**
+     * Get payment instructions (VA, Bank, etc) from Midtrans payload.
+     */
+    public function getPaymentInstructionsAttribute(): array
+    {
+        $payload = $this->payload;
+        if (!$payload) {
+            return [];
+        }
+
+        $instructions = [];
+
+        // 1. Virtual Account (BCA, BNI, BRI, dll)
+        if (isset($payload['va_numbers'][0])) {
+            $instructions['bank'] = strtoupper($payload['va_numbers'][0]['bank']);
+            $instructions['va_number'] = $payload['va_numbers'][0]['va_number'];
+            $instructions['type'] = 'va';
+        } 
+        // 2. Mandiri Bill
+        elseif (isset($payload['bill_key'])) {
+            $instructions['bank'] = 'MANDIRI';
+            $instructions['bill_key'] = $payload['bill_key'];
+            $instructions['biller_code'] = $payload['biller_code'];
+            $instructions['type'] = 'bill';
+        }
+        // 3. Permata VA
+        elseif (isset($payload['permata_va_number'])) {
+            $instructions['bank'] = 'PERMATA';
+            $instructions['va_number'] = $payload['permata_va_number'];
+            $instructions['type'] = 'va';
+        }
+        // 4. Retail (Alfamart, Indomaret)
+        elseif (isset($payload['payment_code'])) {
+            $instructions['bank'] = strtoupper(str_replace('_', ' ', $this->payment_method ?? 'Retail'));
+            $instructions['payment_code'] = $payload['payment_code'];
+            $instructions['type'] = 'retail';
+        }
+
+        return $instructions;
+    }
 }

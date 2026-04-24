@@ -55,7 +55,7 @@
                             <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari berdasarkan nomor pesanan atau judul buku..." 
                                 class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all text-sm font-medium">
                             @if(request('search'))
-                                <a href="{{ route('orders.index', ['tab' => request('tab')]) }}" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-rose-500 transition-colors">
+                                <a href="{{ route('orders.index', array_filter(['tab' => request('tab'), 'status' => request('status')], fn($v) => !is_null($v))) }}" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-rose-500 transition-colors">
                                     <i class="fas fa-times-circle"></i>
                                 </a>
                             @endif
@@ -64,10 +64,10 @@
 
                     <!-- Tabs -->
                     <div class="flex overflow-x-auto pb-2 mb-6 gap-2 no-scrollbar">
-                        <a href="{{ route('orders.index') }}" class="flex-none px-4 py-2 rounded-xl text-sm font-semibold transition-colors {{ request('tab') === null ? 'bg-primary text-white shadow-md shadow-primary/30' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">Semua</a>
+                        <a href="{{ route('orders.index', array_filter(['search' => request('search')], fn($v) => !is_null($v))) }}" class="flex-none px-4 py-2 rounded-xl text-sm font-semibold transition-colors {{ (!request()->has('tab') && !request()->has('status')) ? 'bg-primary text-white shadow-md shadow-primary/30' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">Semua</a>
                         
                         @foreach(OrderStatus::cases() as $status)
-                        <a href="{{ route('orders.index', ['tab' => $status->value]) }}" class="flex-none px-4 py-2 rounded-xl text-sm font-semibold transition-colors {{ request('tab') != '' && request('tab') == $status->value ? 'bg-primary text-white shadow-md shadow-primary/30' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                        <a href="{{ route('orders.index', array_filter(['tab' => $status->value, 'search' => request('search')], fn($v) => !is_null($v))) }}" class="flex-none px-4 py-2 rounded-xl text-sm font-semibold transition-colors {{ (request()->has('tab') && request('tab') == $status->value) || (request()->has('status') && request('status') == $status->value) ? 'bg-primary text-white shadow-md shadow-primary/30' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
                             {{ $status->label() }}
                         </a>
                         @endforeach

@@ -78,7 +78,7 @@ class PaymentService
             $payment->update([
                 'payment_status' => $status,
                 'payment_method' => $notif->payment_type,
-                'payload' => (array) $notif,
+                'payload' => request()->all(),
                 'paid_at' => in_array($status, [OrderPaymentHistory::STATUS_SETTLEMENT, OrderPaymentHistory::STATUS_CAPTURE]) ? now() : $payment->paid_at
             ]);
 

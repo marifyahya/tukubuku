@@ -18,6 +18,16 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Main: Items & Billing (Now on the Left) -->
                 <div class="lg:col-span-2 space-y-6">
+                    <!-- Shipping Address Snapshot -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <i class="fas fa-map-marker-alt text-primary"></i> Alamat Pengiriman
+                        </h3>
+                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                            <pre class="text-xs text-gray-600 font-sans whitespace-pre-wrap leading-relaxed">{{ $order->shipping_address }}</pre>
+                        </div>
+                    </div>
+
                     <!-- Items -->
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                         <div class="px-6 py-4 bg-gray-50/80 border-b border-gray-100">
@@ -134,11 +144,11 @@
 
                         @if($order->status == \App\Enums\OrderStatus::UNPAID && ($paymentStatus == 'pending'))
                             <div class="mt-8 relative z-10">
-                                <!-- Countdown Timer -->
-                                @if($latestPayment && $latestPayment->expiry_at)
+                                @php $orderExpiry = $order->created_at->addMinutes(30); @endphp
+                                @if($orderExpiry->isFuture())
                                     <div class="mb-4 bg-amber-50 border border-amber-100 rounded-xl p-4 text-center">
-                                        <p class="text-[10px] uppercase tracking-wider font-bold text-amber-600 mb-1">Sisa Waktu Pembayaran</p>
-                                        <div id="payment-timer" class="text-xl font-black text-amber-700 font-mono tracking-tighter" data-expiry="{{ $latestPayment->expiry_at->toIso8601String() }}">
+                                        <p class="text-[10px] uppercase tracking-wider font-bold text-amber-600 mb-1">Sisa Waktu Pesanan</p>
+                                        <div id="payment-timer" class="text-xl font-black text-amber-700 font-mono tracking-tighter" data-expiry="{{ $orderExpiry->toIso8601String() }}">
                                             00:00:00
                                         </div>
                                     </div>
@@ -159,15 +169,55 @@
                         @endif
                     </div>
 
-                    <!-- Shipping Address Snapshot -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                        <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-                            <i class="fas fa-map-marker-alt text-primary"></i> Alamat Pengiriman
-                        </h3>
-                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                            <pre class="text-xs text-gray-600 font-sans whitespace-pre-wrap leading-relaxed">{{ $order->shipping_address }}</pre>
+                    <!-- Payment Instructions -->
+                    @if($order->status == \App\Enums\OrderStatus::UNPAID && $latestPayment && $latestPayment->payment_status == 'pending' && !empty($latestPayment->payment_instructions))
+                        @php $instructions = $latestPayment->payment_instructions; @endphp
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-bl-[100px] -z-0"></div>
+                            <h3 class="text-sm font-bold text-gray-800 mb-6 flex items-center gap-2 relative z-10">
+                                <i class="fas fa-wallet text-amber-500"></i> Instruksi Pembayaran
+                            </h3>
+                            
+                            <div class="bg-amber-50 rounded-xl p-4 border border-amber-100 relative z-10">
+                                @if($instructions['type'] == 'va')
+                                    <p class="text-[10px] text-amber-600 uppercase font-bold tracking-wider mb-2">Virtual Account {{ $instructions['bank'] }}</p>
+                                    <div class="flex items-center justify-between gap-3">
+                                        <span class="text-lg font-black text-amber-900 font-mono tracking-tight truncate" id="va-number">{{ $instructions['va_number'] }}</span>
+                                        <button onclick="copyToClipboard('{{ $instructions['va_number'] }}', this)" class="shrink-0 min-w-[65px] text-[10px] bg-white border border-amber-200 text-amber-700 px-2 py-1.5 rounded-lg font-bold hover:bg-amber-100 transition-all">
+                                            SALIN
+                                        </button>
+                                    </div>
+                                @elseif($instructions['type'] == 'bill')
+                                    <p class="text-[10px] text-amber-600 uppercase font-bold tracking-wider mb-2">Mandiri Bill Payment</p>
+                                    <div class="space-y-2">
+                                        <div class="flex justify-between items-center gap-2">
+                                            <span class="text-xs text-amber-700 font-medium">Biller Code</span>
+                                            <span class="font-bold text-amber-900 font-mono">{{ $instructions['biller_code'] }}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center gap-2">
+                                            <span class="text-xs text-amber-700 font-medium">Bill Key</span>
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-bold text-amber-900 font-mono">{{ $instructions['bill_key'] }}</span>
+                                                <button onclick="copyToClipboard('{{ $instructions['bill_key'] }}', this)" class="shrink-0 min-w-[65px] text-[10px] bg-white border border-amber-200 text-amber-700 px-2 py-1 rounded-lg font-bold hover:bg-amber-100 transition-all">SALIN</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @elseif($instructions['type'] == 'retail')
+                                    <p class="text-[10px] text-amber-600 uppercase font-bold tracking-wider mb-2">Gerai {{ $instructions['bank'] }}</p>
+                                    <div class="flex items-center justify-between gap-3">
+                                        <span class="text-lg font-black text-amber-900 font-mono tracking-tight truncate">{{ $instructions['payment_code'] }}</span>
+                                        <button onclick="copyToClipboard('{{ $instructions['payment_code'] }}', this)" class="shrink-0 min-w-[65px] text-[10px] bg-white border border-amber-200 text-amber-700 px-2 py-1.5 rounded-lg font-bold hover:bg-amber-100 transition-all">SALIN</button>
+                                    </div>
+                                @endif
+                                
+                                <div class="mt-4 pt-3 border-t border-amber-100 flex justify-between items-center">
+                                    <span class="text-xs text-amber-700 font-medium">Total Tagihan</span>
+                                    <span class="font-black text-amber-900">@rupiah($latestPayment->gross_amount)</span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    @endif
+
 
                     @if($order->status == \App\Enums\OrderStatus::UNPAID)
                         <form action="{{ route('orders.cancel', $order->order_number) }}" method="POST">
@@ -282,6 +332,20 @@
                     initiatePayment(true);
                 }
             };
+        }
+
+        function copyToClipboard(text, btn) {
+            const originalText = btn.innerHTML;
+            navigator.clipboard.writeText(text).then(() => {
+                btn.innerHTML = 'COPIED!';
+                btn.classList.replace('text-amber-700', 'text-emerald-700');
+                btn.classList.replace('border-amber-200', 'border-emerald-200');
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.replace('text-emerald-700', 'text-amber-700');
+                    btn.classList.replace('border-emerald-200', 'border-amber-200');
+                }, 2000);
+            });
         }
     </script>
 @endif

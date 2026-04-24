@@ -24,10 +24,10 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         $orders = $this->orderRepository->getUserOrders(Auth::id(), [
-            'tab' => $request->tab,
+            'status' => $request->status ?? $request->tab,
             'search' => $request->search,
             'per_page' => 10
-        ]);
+        ])->withQueryString();
 
         return view('user.orders.index', compact('orders'));
     }
