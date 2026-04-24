@@ -77,7 +77,7 @@
                                             <i class="fas fa-shopping-bag text-gray-400"></i>
                                             <div>
                                                 <p class="text-sm font-bold text-gray-900">{{ $order->created_at->format('d M Y') }}</p>
-                                                <p class="text-xs text-gray-500 font-mono">INV-{{ $order->id }}-{{ $order->created_at->format('Ymd') }}</p>
+                                                <p class="text-xs text-gray-500 font-mono">{{ $order->order_number }}</p>
                                             </div>
                                         </div>
                                         <div>
@@ -113,13 +113,13 @@
                                         <div class="flex flex-col sm:flex-row md:flex-col lg:flex-row items-start sm:items-center md:items-end lg:items-center gap-4 border-t md:border-t-0 md:border-l border-gray-100 pt-4 md:pt-0 md:pl-6 flex-shrink-0">
                                             <div>
                                                 <p class="text-sm text-gray-500 mb-0.5">Total Belanja</p>
-                                                <p class="text-lg font-black text-gray-900">@rupiah($order->total_amount)</p>
+                                                <p class="text-lg font-black text-gray-900">@rupiah($order->total_amount + $order->shipping_cost)</p>
                                             </div>
                                             <div class="w-full sm:w-auto flex flex-col gap-2">
-                                                <a href="{{ route('orders.show', $order->id) }}" class="w-full text-center bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-xl font-bold hover:bg-gray-50 transition-colors">Lihat Detail</a>
+                                                <a href="{{ route('orders.show', $order->order_number) }}" class="w-full text-center bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-xl font-bold hover:bg-gray-50 transition-colors">Lihat Detail</a>
                                                 
                                                 @if($order->status === OrderStatus::UNPAID)
-                                                    <form action="{{ route('orders.cancel', $order->id) }}" method="POST">
+                                                    <form action="{{ route('orders.cancel', $order->order_number) }}" method="POST">
                                                         @csrf
                                                         <button type="submit" class="w-full text-center px-4 py-2 border border-red-200 text-red-600 rounded-xl font-bold hover:bg-red-50 transition-colors" onclick="return confirm('Apakah Anda yakin ingin membatalkan pesanan ini?')">
                                                             Batalkan

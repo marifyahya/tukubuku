@@ -20,7 +20,7 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         $query = Order::where('user_id', Auth::id())
-            ->with('orderItems.book')
+            ->with(['orderItems.book', 'latestPayment'])
             ->latest();
 
         if ($request->has('tab') && $request->tab !== '') {
@@ -38,10 +38,12 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         if ($order->user_id !== Auth::id()) {
-            return back()->with('error', 'Unauthorized.');
+            return redirect()->route('orders.index')->with('error', 'Unauthorized.');
         }
 
-        $order->load(['orderItems.book']);
+        $order->load(['orderItems.book', 'latestPayment', 'paymentHistories' => function($q) {
+            $q->latest();
+        }]);
 
         return view('user.orders.show', compact('order'));
     }
@@ -124,7 +126,6 @@ class OrderController extends Controller
             'total_amount' => $subtotal,
             'shipping_cost' => $shippingCost,
             'status' => OrderStatus::UNPAID,
-            'payment_status' => 'pending',
         ]);
 
         // Create order items and decrease stock
@@ -145,7 +146,7 @@ class OrderController extends Controller
             ->whereIn('id', $request->cart_ids)
             ->delete();
 
-        return redirect()->route('orders.show', $order->id)
+        return redirect()->route('orders.show', $order->order_number)
             ->with('success', 'Pesanan berhasil dibuat. Silahkan lakukan pembayaran.');
     }
 

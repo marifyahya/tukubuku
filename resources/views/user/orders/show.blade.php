@@ -11,7 +11,7 @@
                     <i class="fas fa-arrow-left"></i> Kembali ke Daftar Pesanan
                 </a>
                 <div class="flex items-center gap-3 text-sm text-gray-500">
-                    <span class="font-mono bg-white border border-gray-200 px-3 py-1 rounded-lg text-gray-700 font-semibold shadow-sm">INV-{{ $order->id }}-{{ $order->created_at->format('Ymd') }}</span>
+                    <span class="font-mono bg-white border border-gray-200 px-3 py-1 rounded-lg text-gray-700 font-semibold shadow-sm">{{ $order->order_number }}</span>
                 </div>
             </div>
 
@@ -34,35 +34,54 @@
                             <div class="flex justify-between items-center text-sm">
                                 <span class="text-gray-500">Status Pembayaran</span>
                                 @php
-                                    $payStatusClass = match($order->payment_status) {
-                                        'paid' => 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                                    $latestPayment = $order->latestPayment;
+                                    $paymentStatus = $latestPayment->payment_status ?? 'pending';
+                                    $payStatusClass = match($paymentStatus) {
+                                        'settlement', 'paid' => 'bg-emerald-50 text-emerald-600 border-emerald-100',
                                         'pending' => 'bg-amber-50 text-amber-600 border-amber-100',
-                                        'failed' => 'bg-rose-50 text-rose-600 border-rose-100',
+                                        'expire', 'failed', 'cancel', 'deny' => 'bg-rose-50 text-rose-600 border-rose-100',
                                         default => 'bg-gray-50 text-gray-600 border-gray-100',
                                     };
                                 @endphp
                                 <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border {{ $payStatusClass }}">
-                                    {{ $order->payment_status ?? 'pending' }}
+                                    {{ $paymentStatus }}
                                 </span>
                             </div>
                             <div class="flex justify-between items-center text-sm">
                                 <span class="text-gray-500">Tanggal Pesanan</span>
                                 <span class="text-gray-900 font-medium">{{ $order->created_at->format('d M Y, H:i') }}</span>
                             </div>
-                            @if($order->payment_method)
+                            @if($latestPayment && $latestPayment->payment_method)
                             <div class="flex justify-between items-center text-sm">
                                 <span class="text-gray-500">Metode Pembayaran</span>
-                                <span class="text-gray-900 font-medium uppercase">{{ str_replace('_', ' ', $order->payment_method) }}</span>
+                                <span class="text-gray-900 font-medium uppercase">{{ str_replace('_', ' ', $latestPayment->payment_method) }}</span>
                             </div>
                             @endif
                         </div>
 
-                        @if($order->status == \App\Enums\OrderStatus::UNPAID && $order->payment_status == 'pending')
+                        @if($order->status == \App\Enums\OrderStatus::UNPAID && ($paymentStatus == 'pending'))
                             <div class="mt-8 relative z-10">
+                                <!-- Countdown Timer -->
+                                @if($latestPayment && $latestPayment->expiry_at)
+                                    <div class="mb-4 bg-amber-50 border border-amber-100 rounded-xl p-4 text-center">
+                                        <p class="text-[10px] uppercase tracking-wider font-bold text-amber-600 mb-1">Sisa Waktu Pembayaran</p>
+                                        <div id="payment-timer" class="text-xl font-black text-amber-700 font-mono tracking-tighter" data-expiry="{{ $latestPayment->expiry_at->toIso8601String() }}">
+                                            00:00:00
+                                        </div>
+                                    </div>
+                                @endif
+
                                 <button id="pay-button" class="w-full bg-primary text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all transform active:scale-95 flex items-center justify-center gap-2">
                                     <i class="fas fa-wallet"></i> Bayar Sekarang
                                 </button>
-                                <p class="text-[10px] text-gray-400 text-center mt-3">Selesaikan pembayaran untuk memproses pesanan Anda.</p>
+                                
+                                @if($latestPayment && $latestPayment->payment_method)
+                                    <button id="change-method-button" class="w-full mt-3 text-primary text-sm font-bold hover:underline transition-all flex items-center justify-center gap-2">
+                                        <i class="fas fa-exchange-alt"></i> Ubah Metode Pembayaran
+                                    </button>
+                                @endif
+
+                                <p class="text-[10px] text-gray-400 text-center mt-3">Selesaikan pembayaran sebelum waktu habis.</p>
                             </div>
                         @endif
                     </div>
@@ -78,7 +97,7 @@
                     </div>
 
                     @if($order->status == \App\Enums\OrderStatus::UNPAID)
-                        <form action="{{ route('orders.cancel', $order->id) }}" method="POST">
+                        <form action="{{ route('orders.cancel', $order->order_number) }}" method="POST">
                             @csrf
                             <button type="submit" class="w-full text-rose-500 text-sm font-bold hover:underline py-2" onclick="return confirm('Apakah Anda yakin ingin membatalkan pesanan ini?')">
                                 <i class="fas fa-times-circle mr-1"></i> Batalkan Pesanan
@@ -133,19 +152,82 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Payment History (Optional/Admin style or for User debug if needed) -->
+                    @if($order->paymentHistories->count() > 1)
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                            <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-history text-primary"></i> Riwayat Percobaan Pembayaran
+                            </h3>
+                            <div class="space-y-3">
+                                @foreach($order->paymentHistories as $history)
+                                    <div class="flex justify-between items-center text-xs p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                        <div>
+                                            <p class="font-bold text-gray-800 uppercase">{{ str_replace('_', ' ', $history->payment_method ?? 'Belum Pilih Metode') }}</p>
+                                            <p class="text-gray-500">{{ $history->created_at->format('d M Y, H:i') }}</p>
+                                        </div>
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase border 
+                                            @if($history->payment_status == 'settlement' || $history->payment_status == 'paid') bg-emerald-50 text-emerald-600 border-emerald-100
+                                            @elseif($history->payment_status == 'pending') bg-amber-50 text-amber-600 border-amber-100
+                                            @else bg-rose-50 text-rose-600 border-rose-100 @endif">
+                                            {{ $history->payment_status }}
+                                        </span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-@if($order->status == \App\Enums\OrderStatus::UNPAID && $order->payment_status == 'pending')
+@if($order->status == \App\Enums\OrderStatus::UNPAID && ($paymentStatus == 'pending'))
     <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
     <script type="text/javascript">
-        document.getElementById('pay-button').onclick = function(){
-            // Show loading state if needed
-            this.disabled = true;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+        // Timer Logic
+        const timerElement = document.getElementById('payment-timer');
+        if (timerElement) {
+            const expiryDate = new Date(timerElement.dataset.expiry).getTime();
+
+            function updateTimer() {
+                const now = new Date().getTime();
+                const distance = expiryDate - now;
+
+                if (distance < 0) {
+                    timerElement.innerHTML = "EXPIRED";
+                    timerElement.classList.remove('text-amber-700');
+                    timerElement.classList.add('text-rose-600');
+                    document.getElementById('pay-button').disabled = true;
+                    if(document.getElementById('change-method-button')) {
+                        document.getElementById('change-method-button').style.display = 'none';
+                    }
+                    clearInterval(timerInterval);
+                    return;
+                }
+
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                timerElement.innerHTML = 
+                    (hours < 10 ? "0" + hours : hours) + ":" + 
+                    (minutes < 10 ? "0" + minutes : minutes) + ":" + 
+                    (seconds < 10 ? "0" + seconds : seconds);
+            }
+
+            const timerInterval = setInterval(updateTimer, 1000);
+            updateTimer();
+        }
+
+        // Payment Logic
+        function initiatePayment(changeMethod = false) {
+            const payBtn = document.getElementById('pay-button');
+            const originalHtml = payBtn.innerHTML;
+            
+            payBtn.disabled = true;
+            payBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
             
             fetch("{{ route('payment.snap-token') }}", {
                 method: "POST",
@@ -154,7 +236,8 @@
                     "X-CSRF-TOKEN": "{{ csrf_token() }}"
                 },
                 body: JSON.stringify({
-                    order_id: "{{ $order->id }}"
+                    order_id: "{{ $order->id }}",
+                    change_method: changeMethod
                 })
             })
             .then(response => response.json())
@@ -183,9 +266,23 @@
             .catch(error => {
                 console.error("Error:", error);
                 alert("Terjadi kesalahan sistem.");
-                window.location.reload();
+                payBtn.disabled = false;
+                payBtn.innerHTML = originalHtml;
             });
+        }
+
+        document.getElementById('pay-button').onclick = function() {
+            initiatePayment(false);
         };
+
+        const changeBtn = document.getElementById('change-method-button');
+        if (changeBtn) {
+            changeBtn.onclick = function() {
+                if (confirm('Apakah Anda ingin mengubah metode pembayaran?')) {
+                    initiatePayment(true);
+                }
+            };
+        }
     </script>
 @endif
 @endsection

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\OrderPaymentHistory;
 use App\Enums\OrderStatus;
 use Illuminate\Http\Request;
 use Midtrans\Config;
@@ -27,23 +28,44 @@ class PaymentController extends Controller
     {
         $request->validate([
             'order_id' => 'required|exists:orders,id',
+            'change_method' => 'nullable|boolean',
         ]);
 
-        $order = Order::with(['user', 'orderItems.book'])->findOrFail($request->order_id);
+        $order = Order::with(['user', 'orderItems.book', 'latestPayment', 'paymentHistories'])->findOrFail($request->order_id);
 
         // Security check
         if ($order->user_id !== auth()->id()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        // Return existing token if already paid or failed
-        if ($order->payment_status !== 'pending') {
-            return response()->json(['message' => 'Order is already ' . $order->payment_status], 400);
+        // Check latest payment
+        $latestPayment = $order->latestPayment;
+
+        // If not change_method and we have an active token that isn't expired
+        if (!$request->change_method && $latestPayment && $latestPayment->payment_status === 'pending') {
+            if ($latestPayment->expiry_at && $latestPayment->expiry_at->isFuture()) {
+                return response()->json([
+                    'snap_token' => $latestPayment->payment_token,
+                    'order_id' => $order->id,
+                    'expiry_at' => $latestPayment->expiry_at->toIso8601String()
+                ]);
+            }
         }
 
-        // If we already have a token, we might want to reuse it, 
-        // but Midtrans tokens expire, so let's generate a new one if requested.
-        
+        // Cancel previous transaction in Midtrans if it was pending
+        if ($latestPayment && $latestPayment->payment_status === 'pending') {
+            try {
+                \Midtrans\Transaction::cancel($latestPayment->midtrans_order_id);
+                $latestPayment->update(['payment_status' => 'cancelled']);
+            } catch (\Exception $e) {
+                // Ignore if fails
+            }
+        }
+
+        $attemptCount = $order->paymentHistories->count() + 1;
+        $midtransOrderId = "{$order->order_number}-{$attemptCount}";
+        $grossAmount = (int)($order->total_amount + $order->shipping_cost);
+
         $item_details = [];
         foreach ($order->orderItems as $item) {
             $item_details[] = [
@@ -54,7 +76,6 @@ class PaymentController extends Controller
             ];
         }
 
-        // Add shipping cost as an item
         $item_details[] = [
             'id' => 'shipping',
             'price' => (int)$order->shipping_cost,
@@ -62,25 +83,39 @@ class PaymentController extends Controller
             'name' => 'Ongkos Kirim',
         ];
 
+        $expiryMinutes = 60; // 1 hour as requested
         $params = [
             'transaction_details' => [
-                'order_id' => $order->id . '-' . time(), // Unique order id for Midtrans
-                'gross_amount' => (int)($order->total_amount + $order->shipping_cost),
+                'order_id' => $midtransOrderId,
+                'gross_amount' => $grossAmount,
             ],
             'item_details' => $item_details,
             'customer_details' => [
                 'first_name' => $order->user->name,
                 'email' => $order->user->email,
             ],
+            'expiry' => [
+                'start_time' => now()->format('Y-m-d H:i:s O'),
+                'unit' => 'minutes',
+                'duration' => $expiryMinutes
+            ]
         ];
 
         try {
             $snapToken = Snap::getSnapToken($params);
-            $order->update(['payment_token' => $snapToken]);
+            
+            $payment = $order->paymentHistories()->create([
+                'midtrans_order_id' => $midtransOrderId,
+                'payment_token' => $snapToken,
+                'payment_status' => 'pending',
+                'gross_amount' => $order->total_amount + $order->shipping_cost,
+                'expiry_at' => now()->addMinutes($expiryMinutes),
+            ]);
             
             return response()->json([
                 'snap_token' => $snapToken,
-                'order_id' => $order->id
+                'order_id' => $order->id,
+                'expiry_at' => $payment->expiry_at->toIso8601String()
             ]);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
@@ -100,39 +135,44 @@ class PaymentController extends Controller
 
         $transaction = $notif->transaction_status;
         $type = $notif->payment_type;
-        $order_id_raw = $notif->order_id;
+        $midtrans_order_id = $notif->order_id;
         $fraud = $notif->fraud_status;
 
-        // Split order_id if we added timestamp
-        $order_id = explode('-', $order_id_raw)[0];
-        $order = Order::findOrFail($order_id);
+        $payment = OrderPaymentHistory::where('midtrans_order_id', $midtrans_order_id)->first();
+        
+        if (!$payment) {
+            return response()->json(['message' => 'Payment record not found'], 404);
+        }
+
+        $order = $payment->order;
 
         if ($transaction == 'capture') {
             if ($type == 'credit_card') {
                 if ($fraud == 'challenge') {
-                    $order->payment_status = 'challenge';
+                    $payment->payment_status = 'challenge';
                 } else {
-                    $order->payment_status = 'paid';
-                    $order->status = OrderStatus::PACKING;
-                    $order->paid_at = now();
+                    $payment->payment_status = 'settlement';
+                    $payment->paid_at = now();
+                    $order->update(['status' => OrderStatus::PACKING]);
                 }
             }
         } else if ($transaction == 'settlement') {
-            $order->payment_status = 'paid';
-            $order->status = OrderStatus::PACKING;
-            $order->paid_at = now();
+            $payment->payment_status = 'settlement';
+            $payment->paid_at = now();
+            $order->update(['status' => OrderStatus::PACKING]);
         } else if ($transaction == 'pending') {
-            $order->payment_status = 'pending';
+            $payment->payment_status = 'pending';
         } else if ($transaction == 'deny') {
-            $order->payment_status = 'failed';
+            $payment->payment_status = 'deny';
         } else if ($transaction == 'expire') {
-            $order->payment_status = 'failed';
+            $payment->payment_status = 'expire';
         } else if ($transaction == 'cancel') {
-            $order->payment_status = 'failed';
+            $payment->payment_status = 'cancel';
         }
 
-        $order->payment_method = $type;
-        $order->save();
+        $payment->payment_method = $type;
+        $payment->payload = $request->all();
+        $payment->save();
 
         return response()->json(['message' => 'OK']);
     }
