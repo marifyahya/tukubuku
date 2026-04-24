@@ -138,8 +138,7 @@
                             </div>
                         </div>
 
-                        <form action="{{ route('checkout') }}" method="POST" id="checkout-form">
-                            @csrf
+                        <form action="{{ route('checkout.confirm') }}" method="GET" id="checkout-form">
                             <div id="checkout-cart-ids"></div>
                             <button type="submit" id="checkout-btn" class="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-lg shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all transform active:scale-95 flex items-center justify-center gap-2">
                                 <i class="fas fa-lock text-sm opacity-80"></i> Checkout Sekarang
