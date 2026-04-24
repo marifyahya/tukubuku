@@ -45,6 +45,23 @@
                         <i class="fas fa-shopping-bag text-primary"></i> Pesanan Saya
                     </h2>
 
+                    <!-- Search -->
+                    <div class="mb-6">
+                        <form action="{{ route('orders.index') }}" method="GET" class="relative group">
+                            @if(request('tab'))
+                                <input type="hidden" name="tab" value="{{ request('tab') }}">
+                            @endif
+                            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors"></i>
+                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari berdasarkan nomor pesanan atau judul buku..." 
+                                class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all text-sm font-medium">
+                            @if(request('search'))
+                                <a href="{{ route('orders.index', ['tab' => request('tab')]) }}" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-rose-500 transition-colors">
+                                    <i class="fas fa-times-circle"></i>
+                                </a>
+                            @endif
+                        </form>
+                    </div>
+
                     <!-- Tabs -->
                     <div class="flex overflow-x-auto pb-2 mb-6 gap-2 no-scrollbar">
                         <a href="{{ route('orders.index') }}" class="flex-none px-4 py-2 rounded-xl text-sm font-semibold transition-colors {{ request('tab') === null ? 'bg-primary text-white shadow-md shadow-primary/30' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">Semua</a>

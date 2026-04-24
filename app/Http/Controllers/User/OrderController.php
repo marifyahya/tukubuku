@@ -27,6 +27,16 @@ class OrderController extends Controller
             $query->where('status', $request->tab);
         }
 
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('order_number', 'like', "%{$search}%")
+                  ->orWhereHas('orderItems.book', function($bq) use ($search) {
+                      $bq->where('title', 'like', "%{$search}%");
+                  });
+            });
+        }
+
         $orders = $query->paginate(10)->withQueryString();
 
         return view('user.orders.index', compact('orders'));

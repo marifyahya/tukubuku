@@ -18,7 +18,7 @@
             
             <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between mb-8 pb-6 border-b border-gray-100">
                 <div>
-                    <h2 class="text-xl font-bold text-gray-800 mb-1">Pesanan #{{ $order->id }}</h2>
+                    <h2 class="text-xl font-bold text-gray-800 mb-1 font-mono text-sm">{{ $order->order_number }}</h2>
                     <p class="text-gray-500 text-sm"><i class="far fa-calendar-alt mr-1"></i> {{ $order->created_at->format('d M Y - H:i') }}</p>
                 </div>
                 <div class="mt-4 md:mt-0">
@@ -56,7 +56,7 @@
                 <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                     <i class="fas fa-sync-alt text-primary"></i> Update Status
                 </h2>
-                <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST">
+                <form action="{{ route('admin.orders.updateStatus', $order) }}" method="POST">
                     @csrf
                     @method('PUT')
                     <div class="mb-4">
@@ -132,7 +132,7 @@
 
     <!-- Danger Zone -->
     <div class="flex justify-end">
-        <form action="{{ route('admin.orders.destroy', $order->id) }}" method="POST">
+        <form action="{{ route('admin.orders.destroy', $order) }}" method="POST">
             @csrf
             @method('DELETE')
             <button type="submit" class="flex items-center gap-2 bg-white border border-red-200 text-red-600 px-6 py-2.5 rounded-xl hover:bg-red-50 font-bold transition-colors"
