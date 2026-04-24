@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\OrderPaymentHistory;
 use App\Enums\OrderStatus;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PaymentService
 {
@@ -73,6 +74,13 @@ class PaymentService
     public function processNotification(): bool
     {
         $notif = $this->midtransService->getNotification();
+
+        // 1. Security: Validate Signature Key
+        if (!$this->midtransService->validateSignature($notif)) {
+            Log::warning("Midtrans Webhook: Invalid Signature Key for Order ID: {$notif->order_id}");
+            return false;
+        }
+
         return $this->updatePaymentFromMidtrans($notif->order_id, $notif);
     }
 
@@ -105,6 +113,13 @@ class PaymentService
             $response->fraud_status ?? 'accept',
             $response->payment_type
         );
+
+        // 2. Idempotency: Skip if payment is already in a final state
+        if (in_array($payment->payment_status, [OrderPaymentHistory::STATUS_SETTLEMENT, OrderPaymentHistory::STATUS_CAPTURE])) {
+            // Already paid, but we still trigger event for frontend sync just in case
+            \App\Events\PaymentStatusUpdated::dispatch($order);
+            return true;
+        }
 
         DB::transaction(function () use ($payment, $order, $status, $response) {
             $payment->update([

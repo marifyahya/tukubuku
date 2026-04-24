@@ -38,13 +38,13 @@ class MidtransService
     public function createSnapToken(Order $order, int $attemptCount, int $expiryMinutes = 45): string
     {
         $midtransOrderId = "{$order->order_number}-{$attemptCount}";
-        $grossAmount = (int)($order->total_amount + $order->shipping_cost);
+        $grossAmount = (int) ($order->total_amount + $order->shipping_cost);
 
         $itemDetails = [];
         foreach ($order->orderItems as $item) {
             $itemDetails[] = [
                 'id' => $item->book_id,
-                'price' => (int)$item->price_at_purchase,
+                'price' => (int) $item->price_at_purchase,
                 'quantity' => $item->quantity,
                 'name' => substr($item->book->title, 0, 50),
             ];
@@ -52,7 +52,7 @@ class MidtransService
 
         $itemDetails[] = [
             'id' => 'shipping',
-            'price' => (int)$order->shipping_cost,
+            'price' => (int) $order->shipping_cost,
             'quantity' => 1,
             'name' => 'Ongkos Kirim',
         ];
@@ -106,6 +106,22 @@ class MidtransService
      */
     public function getTransactionStatus(string $midtransOrderId): object
     {
-        return Transaction::status($midtransOrderId);
+        return (object) Transaction::status($midtransOrderId);
+    }
+
+    /**
+     * Validate the Signature Key from Midtrans notification.
+     * Formula: SHA512(order_id + status_code + gross_amount + ServerKey)
+     *
+     * @param object $payload
+     * @return bool
+     */
+    public function validateSignature(object $payload): bool
+    {
+        $serverKey = config('midtrans.server_key');
+        $input = $payload->order_id . $payload->status_code . $payload->gross_amount . $serverKey;
+        $signature = hash("sha512", $input);
+
+        return $signature === $payload->signature_key;
     }
 }
