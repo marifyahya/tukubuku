@@ -210,7 +210,9 @@
                                     </div>
                                 @endif
                                 
-                                <div class="mt-4 pt-3 border-t border-amber-100 flex justify-between items-center">
+                                @endif
+
+                                <div class="pt-3 border-t border-amber-100 flex justify-between items-center">
                                     <span class="text-xs text-amber-700 font-medium">Total Tagihan</span>
                                     <span class="font-black text-amber-900">@rupiah($latestPayment->gross_amount)</span>
                                 </div>
@@ -272,6 +274,20 @@
         }
 
         // Payment Logic
+        document.addEventListener('DOMContentLoaded', function() {
+            // Real-time Payment Sync
+            if (typeof Echo !== 'undefined') {
+                Echo.private('orders.{{ $order->id }}')
+                    .listen('.payment.updated', (e) => {
+                        console.log('Payment status updated:', e);
+                        // Refresh the page to show new status
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 500);
+                    });
+            }
+        });
+
         function initiatePayment(changeMethod = false) {
             const payBtn = document.getElementById('pay-button');
             const originalHtml = payBtn.innerHTML;

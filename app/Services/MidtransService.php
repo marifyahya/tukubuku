@@ -100,4 +100,12 @@ class MidtransService
     {
         return new Notification();
     }
+
+    /**
+     * Get transaction status directly from Midtrans API.
+     */
+    public function getTransactionStatus(string $midtransOrderId): object
+    {
+        return Transaction::status($midtransOrderId);
+    }
 }

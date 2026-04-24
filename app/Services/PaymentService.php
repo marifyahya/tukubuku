@@ -66,19 +66,44 @@ class PaymentService
     public function processNotification(): bool
     {
         $notif = $this->midtransService->getNotification();
+        return $this->updatePaymentFromMidtrans($notif->order_id, $notif);
+    }
 
-        $payment = OrderPaymentHistory::where('midtrans_order_id', $notif->order_id)->first();
-        if (!$payment)
+    /**
+     * Sync payment status manually from Midtrans API.
+     */
+    public function syncStatus(string $midtransOrderId): bool
+    {
+        try {
+            $statusResponse = $this->midtransService->getTransactionStatus($midtransOrderId);
+            return $this->updatePaymentFromMidtrans($midtransOrderId, $statusResponse);
+        } catch (\Exception $e) {
             return false;
+        }
+    }
+
+    /**
+     * Update payment and order status based on Midtrans response object/notification.
+     */
+    private function updatePaymentFromMidtrans(string $midtransOrderId, object $response): bool
+    {
+        $payment = OrderPaymentHistory::where('midtrans_order_id', $midtransOrderId)->first();
+        if (!$payment) {
+            return false;
+        }
 
         $order = $payment->order;
-        $status = $this->mapMidtransStatus($notif->transaction_status, $notif->fraud_status, $notif->payment_type);
+        $status = $this->mapMidtransStatus(
+            $response->transaction_status,
+            $response->fraud_status ?? 'accept',
+            $response->payment_type
+        );
 
-        DB::transaction(function () use ($payment, $order, $status, $notif) {
+        DB::transaction(function () use ($payment, $order, $status, $response) {
             $payment->update([
                 'payment_status' => $status,
-                'payment_method' => $notif->payment_type,
-                'payload' => request()->all(),
+                'payment_method' => $response->payment_type,
+                'payload' => (array) $response, // Cast to array for JSON column
                 'paid_at' => in_array($status, [OrderPaymentHistory::STATUS_SETTLEMENT, OrderPaymentHistory::STATUS_CAPTURE]) ? now() : $payment->paid_at
             ]);
 
@@ -86,6 +111,8 @@ class PaymentService
                 $order->update(['status' => OrderStatus::PACKING]);
             }
         });
+
+        \App\Events\PaymentStatusUpdated::dispatch($order);
 
         return true;
     }

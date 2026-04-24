@@ -51,6 +51,23 @@
                 </div>
             </div>
 
+            @if($order->status == OrderStatus::UNPAID)
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-credit-card text-primary"></i> Sinkronisasi Midtrans
+                </h2>
+                <div class="bg-amber-50 rounded-xl p-4 border border-amber-100 mb-4 text-xs text-amber-700 leading-relaxed">
+                    <i class="fas fa-info-circle mr-1"></i> Gunakan fitur ini jika pembayaran user sudah berhasil di Midtrans tapi status di sistem masih <b>Belum Bayar</b>.
+                </div>
+                <form action="{{ route('admin.orders.sync', $order->order_number) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="w-full bg-white border-2 border-primary text-primary py-2.5 rounded-xl hover:bg-primary/5 font-bold transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-sync-alt"></i> Tarik Status Midtrans
+                    </button>
+                </form>
+            </div>
+            @endif
+
             @if($order->status !== OrderStatus::COMPLETED && $order->status !== OrderStatus::CANCELLED)
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">

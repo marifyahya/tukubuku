@@ -148,6 +148,23 @@ class OrderController extends Controller
     }
 
     /**
+     * Sync payment status manually from Midtrans.
+     */
+    public function syncStatus(Order $order, \App\Services\PaymentService $paymentService)
+    {
+        $latestPayment = $order->latestPayment;
+        if (!$latestPayment) {
+            return back()->with('error', 'Data pembayaran tidak ditemukan.');
+        }
+
+        if ($paymentService->syncStatus($latestPayment->midtrans_order_id)) {
+            return back()->with('success', 'Status pembayaran berhasil disinkronisasi dari Midtrans.');
+        }
+
+        return back()->with('error', 'Gagal menyinkronkan status atau tidak ada perubahan di Midtrans.');
+    }
+
+    /**
      * Remove the specified order.
      */
     public function destroy(Order $order)

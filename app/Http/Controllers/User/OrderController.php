@@ -15,7 +15,8 @@ class OrderController extends Controller
 {
     public function __construct(
         private \App\Services\OrderService $orderService,
-        private \App\Repositories\Contracts\OrderRepositoryInterface $orderRepository
+        private \App\Repositories\Contracts\OrderRepositoryInterface $orderRepository,
+        private \App\Services\PaymentService $paymentService
     ) {
     }
     /**
@@ -99,6 +100,27 @@ class OrderController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
+    }
+
+    /**
+     * Sync payment status manually from Midtrans.
+     */
+    public function syncStatus(Order $order)
+    {
+        if ($order->user_id !== Auth::id()) {
+            return back()->with('error', 'Unauthorized.');
+        }
+
+        $latestPayment = $order->latestPayment;
+        if (!$latestPayment) {
+            return back()->with('error', 'Data pembayaran tidak ditemukan.');
+        }
+
+        if ($this->paymentService->syncStatus($latestPayment->midtrans_order_id)) {
+            return back()->with('success', 'Status pembayaran berhasil diperbarui.');
+        }
+
+        return back()->with('error', 'Gagal memperbarui status atau status belum berubah di Midtrans.');
     }
 
     /**
